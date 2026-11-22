@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vortax AI Studio</title>
+<style>
+  body { font-family: sans-serif; background: #0d0d0d; color: #fff; display: flex; justify-content: center; padding: 20px; margin: 0; }
+  .box { background: #1a1a1a; padding: 22px; border-radius: 15px; width: 100%; max-width: 480px; border: 1px solid #2a2a2a; text-align: center; }
+  h1 { color: #00e676; margin: 0 0 5px 0; font-size: 24px; }
+  p { color: #aaa; font-size: 13px; margin: 0 0 15px 0; }
+  select, textarea, button { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #333; background: #262626; color: #fff; font-size: 15px; box-sizing: border-box; }
+  button { background: #00e676; color: #000; font-weight: bold; border: none; cursor: pointer; }
+  button:disabled { background: #555; }
+  .voice-btn { background: #ff9100; color: #000; display: none; }
+  .dl-btn { display: none; background: #2979ff; color: #fff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 8px; }
+  #status { margin-top: 10px; font-size: 14px; color: #ffab00; }
+  img, video { width: 100%; border-radius: 10px; margin-top: 15px; display: none; }
+  #scriptBox { display: none; background: #222; padding: 12px; border-radius: 8px; margin-top: 12px; text-align: left; font-size: 13px; border-left: 3px solid #00e676; }
+  canvas { display: none; }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h1>VORTAX AI STUDIO</h1>
+  <p>Görsel, Video ve Çok Dilli Seslendirme</p>
+
+  <select id="mode">
+    <option value="video">🎬 Video + Seslendirme Üret</option>
+    <option value="image">🖼️ Sadece Görsel Üret</option>
+  </select>
+
+  <select id="lang">
+    <option value="tr-TR">🇹🇷 Türkçe</option>
+    <option value="en-US">🇺🇸 English</option>
+    <option value="es-ES">🇪🇸 Español</option>
+    <option value="de-DE">🇩🇪 Deutsch</option>
+    <option value="fr-FR">🇫🇷 Français</option>
+    <option value="ar-SA">🇸🇦 العربية</option>
+    <option value="ru-RU">🇷🇺 Русский</option>
+  </select>
+
+  <textarea id="prompt" rows="3" placeholder="Sahneyi buraya yaz..."></textarea>
+  <button id="btn" type="button" onclick="baslat()">Vortax ile Oluştur</button>
+
+  <div id="status"></div>
+  <canvas id="cvs" width="640" height="640"></canvas>
+  <video id="vid" controls autoplay loop playsinline></video>
+  <img id="img" alt="Sonuç" />
+  <div id="scriptBox"></div>
+  <button id="speakBtn" type="button" class="voice-btn" onclick="seslendir()">🔊 Seslendirmeyi Dinle</button>
+  <a id="dl" class="dl-btn" download="vortax-ai">⬇️ Cihaza İndir</a>
+</div>
+
+<script>
+const GEMINI_API_KEY = "AQ.Ab8RN6KHL7IMnLv61W_C4PtRqF5PcBZV_23dP9-Ic1IlbxeuRQ";
+let sesMetni = "";
+
+function seslendir() {
+  if (!sesMetni || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(sesMetni);
+  u.lang = document.getElementById("lang").value;
+  window.speechSynthesis.speak(u);
+}
+
+function videoYap(resim) {
+  return new Promise(function(resolve) {
+    const c = document.getElementById("cvs");
+    const ctx = c.getContext("2d");
+    const stream = c.captureStream(25);
+    const rec = new MediaRecorder(stream);
+    const chunks = [];
+    rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+    rec.onstop = function() {
+      const b = new Blob(chunks, { type: "video/webm" });
+      resolve(URL.createObjectURL(b));
+    };
+    rec.start();
+    let f = 0;
+    function ciz() {
+      if (f >= 100) { rec.stop(); return; }
+      const s = 1 + (f / 100) * 0.15;
+      const w = c.width * s;
+      const h = c.height * s;
+      ctx.clearRect(0, 0, c.width, c.height);
+      ctx.drawImage(resim, (c.width - w) / 2, (c.height - h) / 2, w, h);
+      f++;
+      requestAnimationFrame(ciz);
+    }
+    ciz();
+  });
+}
+
+async function baslat() {
+  const txt = document.getElementById("prompt").value.trim();
+  const mode = document.getElementById("mode").value;
+  const langSelect = document.getElementById("lang");
+  const langName = langSelect.options.item(langSelect.selectedIndex).text;
+  const st = document.getElementById("status");
+  const imgEl = document.getElementById("img");
+  const vidEl = document.getElementById("vid");
+  const sb = document.getElementById("scriptBox");
+  const spBtn = document.getElementById("speakBtn");
+  const dl = document.getElementById("dl");
+  const btn = document.getElementById("btn");
+
+  if (!txt) { alert("Metin yaz knk!"); return; }
+  const key = GEMINI_API_KEY.trim();
+  if (!key) { st.innerText = "Hata: API anahtarı boş!"; return; }
+
+  btn.disabled = true;
+  imgEl.style.display = "none";
+  vidEl.style.display = "none";
+  sb.style.display = "none";
+  spBtn.style.display = "none";
+  dl.style.display = "none";
+  st.innerText = "1/3: Görsel çiziliyor...";
+
+  try {
+    const url1 = "https://googleapis.com" + key;
+    const r1 = await fetch(url1, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: "Create a cinematic detailed image: " + txt }] }]
+      })
+    });
+    const d1 = await r1.json();
+    if (!r1.ok) throw new Error(d1.error ? d1.error.message : "Görsel hatası");
+
+    const cand = d1.candidates.item ? d1.candidates.item(0) : d1.candidates.at(0);
+    const part = cand.content.parts.find(function(p) { return p.inlineData; });
+    if (!part) throw new Error("Görsel üretilemedi, başka bir şey yaz.");
+
+    const imgUrl = "data:" + part.inlineData.mimeType + ";base64," + part.inlineData.data;
+
+    if (mode === "image") {
+      imgEl.src = imgUrl;
+      imgEl.style.display = "block";
+      dl.href = imgUrl;
+      dl.download = "vortax.png";
+      dl.style.display = "block";
+      st.innerText = "Görsel hazır!";
+      btn.disabled = false;
+      return;
+    }
+
+    st.innerText = "2/3: Seslendirme metni yazılıyor...";
+    const url2 = "https://googleapis.com" + key;
+    const r2 = await fetch(url2, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: langName + " dilinde bu sahne için 2 cümlelik kısa bir dış ses metni yaz: " + txt }] }]
+      })
+    });
+    const d2 = await r2.json();
+    const textPart = d2.candidates.at(0).content.parts.at(0);
+    sesMetni = textPart.text.trim();
+
+    st.innerText = "3/3: Video ve ses birleştiriliyor...";
+    const tmp = new Image();
+    tmp.src = imgUrl;
+    await new Promise(function(r) { tmp.onload = r; });
+
+    const vUrl = await videoYap(tmp);
+    vidEl.src = vUrl;
+    vidEl.style.display = "block";
+    sb.innerText = "🎙️ " + sesMetni;
+    sb.style.display = "block";
+    spBtn.style.display = "block";
+    dl.href = vUrl;
+    dl.download = "vortax.webm";
+    dl.style.display = "block";
+    st.innerText = "Video ve seslendirme hazır!";
+    seslendir();
+
+  } catch (err) {
+    st.innerText = "Bilgi: " + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
