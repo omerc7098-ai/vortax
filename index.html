@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vortax AI - Viral POV Senaryo Video Üretici</title>
+<title>Vortax AI - Serbest POV Video & Doğal Ses Stüdyosu</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #09090b; color: #fff; display: flex; justify-content: center; padding: 15px; margin: 0; }
   .box { background: #141418; padding: 20px; border-radius: 18px; width: 100%; max-width: 440px; border: 1px solid #27272a; text-align: center; box-shadow: 0 10px 30px rgba(0,230,118,0.12); }
@@ -14,7 +14,7 @@
   button { background: linear-gradient(90deg, #00e676, #00b0ff); color: #000; font-weight: bold; border: none; cursor: pointer; font-size: 15px; }
   button:disabled { background: #3f3f46; color: #888; }
   .voice-btn { background: #ff9100; color: #000; display: none; margin-top: 8px; }
-  .dl-btn { display: none; background: #2979ff; color: #fff; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 8px; font-size: 14px; }
+  .dl-btn { display: none; background: #2979ff; color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 8px; font-size: 14px; }
   #status { margin-top: 10px; font-size: 13px; color: #ffab00; }
   video { width: 100%; max-width: 270px; aspect-ratio: 9/16; border-radius: 14px; margin: 15px auto 0 auto; display: none; border: 2px solid #27272a; background: #000; }
   canvas { display: none; }
@@ -24,107 +24,176 @@
 
 <div class="box">
   <h1>VORTAX AI STUDIO</h1>
-  <div class="badge">VİRAL POV & SENARYO VİDEO ÜRETİCİ</div>
-  <p>TikTok & Reels "Senaryo Vakti" tarzı animasyon videolar üret</p>
+  <div class="badge">SINIRSIZ POV HİKAYE & DOĞAL SES</div>
+  <p>Aklındaki her senaryoyu yaz; karakter hareket etsin, konuşsun!</p>
 
   <input type="text" id="videoTitle" placeholder="Başlık: Örn: Türk bir vücut geliştirmeci olsaydın (Part 1)" />
 
-  <select id="characterStyle">
-    <option value="gym">💪 Kaslı Sporcu / Vücut Geliştirmeci</option>
-    <option value="student">🎒 Öğrenci / Sınav Stresi Karakteri</option>
-    <option value="worker">💼 Çalışan / Patron Karakteri</option>
-    <option value="normal">🧑 Günlük Mizah Karakteri</option>
+  <select id="voiceGender">
+    <option value="male">🎙️ Doğal Erkek Sesi (Derin & Akıcı)</option>
+    <option value="female">🎙️ Doğal Kadın Sesi (Net & Akıcı)</option>
   </select>
 
-  <textarea id="storyText" rows="3" placeholder="Hikaye metni: Örn: Sabah uyandığın an ilk iş aynanın karşısına geçip kaslarına bakarak poz veriyorsun..."></textarea>
+  <textarea id="storyText" rows="3" placeholder="Ne yazarsan karakter onu yapar! Örn: Aynanın karşısına geçip kollarını kaldırıyor ve kaslarını sıkıyor..."></textarea>
 
-  <button id="btn" type="button" onclick="povVideoUret()">🎬 Viral POV Videosu Oluştur</button>
+  <button id="btn" type="button" onclick="povOlustur()">🎬 Sınırsız POV Videosu Oluştur</button>
 
   <div id="status"></div>
   <canvas id="cvs" width="540" height="960"></canvas>
   <video id="vid" controls autoplay loop playsinline></video>
-  <button id="speakBtn" type="button" class="voice-btn" onclick="sesOku()">🔊 Seslendirmeyi Tekrar Dinle</button>
-  <a id="dl" class="dl-btn" download="vortax-pov-senaryo.webm">⬇️ TikTok / Reels Videosunu İndir</a>
+  <button id="speakBtn" type="button" class="voice-btn" onclick="dogalSesOku()">🔊 Doğal İnsan Sesini Dinle</button>
+  <a id="dl" class="dl-btn" download="vortax-pov-video.webm">⬇️ TikTok / Reels Videosunu İndir</a>
 </div>
 
 <script>
 let okunacakMetin = "";
+let yukluSesler = [];
 
-function sesOku() {
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = function() {
+    yukluSesler = window.speechSynthesis.getVoices();
+  };
+}
+
+function dogalSesOku() {
   if (!okunacakMetin || !('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
+  if (yukluSesler.length === 0) yukluSesler = window.speechSynthesis.getVoices();
+
+  const cinsiyet = document.getElementById("voiceGender").value;
   const u = new SpeechSynthesisUtterance(okunacakMetin);
   u.lang = "tr-TR";
-  u.rate = 1.02;
+
+  // Cihazdaki en doğal Google / Natural Türkçe insan sesini bul
+  const trSesler = yukluSesler.filter(function(v) { return v.lang.toLowerCase().includes("tr"); });
+  if (trSesler.length > 0) {
+    const dogalSes = trSesler.find(function(v) {
+      return v.name.toLowerCase().includes("natural") || v.name.toLowerCase().includes("google") || v.name.toLowerCase().includes("emel") || v.name.toLowerCase().includes("ahmet");
+    });
+    u.voice = dogalSes || trSesler.at(0);
+  }
+
+  // Robotikliği silen insan tonlaması ve hızı
+  u.rate = 0.96;
+  u.pitch = cinsiyet === "male" ? 0.85 : 1.08;
   window.speechSynthesis.speak(u);
 }
 
-function karakterCiz(ctx, cx, cy, frame, tip) {
-  const nefes = Math.sin(frame * 0.15) * 4;
-  const kolHareket = Math.sin(frame * 0.12) * 12;
+function aksiyonAlgila(metin) {
+  const m = metin.toLowerCase();
+  if (m.includes("kas") || m.includes("poz") || m.includes("kol") || m.includes("spor") || m.includes("vücut")) return "flex";
+  if (m.includes("yürü") || m.includes("koş") || m.includes("git") || m.includes("sokak")) return "walk";
+  if (m.includes("sevin") || m.includes("dans") || m.includes("kutla") || m.includes("mutlu") || m.includes("el")) return "celebrate";
+  return "talk";
+}
 
-  // Arka plan oda duvarı ve ayna (Ekran görüntüsündeki gibi pastel çizgi film odası)
-  ctx.fillStyle = "#e8dfd5";
-  ctx.fillRect(40, 260, 460, 420);
+function sahneVeKarakterCiz(ctx, cx, cy, frame, aksiyon) {
+  const nefes = Math.sin(frame * 0.14) * 3;
+  const dalga = Math.sin(frame * 0.18);
 
-  // Oda penceresi
-  ctx.fillStyle = "#bae6fd";
-  ctx.fillRect(65, 290, 110, 140);
-  ctx.strokeStyle = "#94a3b8";
-  ctx.lineWidth = 4;
-  ctx.strokeRect(65, 290, 110, 140);
+  // Arka Plan (Yürüme varsa sokak, diğerlerinde oda/ayna sahnesi)
+  if (aksiyon === "walk") {
+    ctx.fillStyle = "#bae6fd";
+    ctx.fillRect(40, 260, 460, 290);
+    ctx.fillStyle = "#64748b";
+    ctx.fillRect(40, 550, 460, 130);
+    // Hareket eden ağaç/bina arka planı
+    const kayma = (frame * 5) % 460;
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillRect(460 - kayma, 350, 70, 200);
+  } else {
+    ctx.fillStyle = "#e8dfd5";
+    ctx.fillRect(40, 260, 460, 420);
+    ctx.fillStyle = "#bae6fd";
+    ctx.fillRect(65, 290, 110, 140);
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(65, 290, 110, 140);
+    // Boy Aynası
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillRect(355, 310, 115, 310);
+    ctx.strokeStyle = "#78350f";
+    ctx.lineWidth = 8;
+    ctx.strokeRect(355, 310, 115, 310);
+    ctx.fillStyle = "#d6c7b2";
+    ctx.fillRect(40, 610, 460, 70);
+  }
 
-  // Boy Aynası (Sağ tarafta)
-  ctx.fillStyle = "#cbd5e1";
-  ctx.fillRect(355, 310, 115, 310);
-  ctx.strokeStyle = "#78350f";
-  ctx.lineWidth = 8;
-  ctx.strokeRect(355, 310, 115, 310);
+  // Bacaklar (Yürüme aksiyonunda adım atar)
+  const adim = aksiyon === "walk" ? dalga * 22 : 0;
+  const zipla = aksiyon === "walk" ? Math.abs(Math.cos(frame * 0.18)) * 6 : 0;
+  const yMerkez = cy - zipla;
 
-  // Zemin
-  ctx.fillStyle = "#d6c7b2";
-  ctx.fillRect(40, 610, 460, 70);
-
-  // 2D ÇİZGİ KARAKTER (Ekran görüntüsündeki stil)
-  // Bacaklar & Şort
   ctx.fillStyle = "#1e293b";
-  ctx.fillRect(cx - 28, cy + 45, 56, 45);
+  ctx.fillRect(cx - 28, yMerkez + 45, 56, 42);
   ctx.strokeStyle = "#1e293b";
-  ctx.lineWidth = 6;
+  ctx.lineWidth = 7;
+  ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(cx - 14, cy + 90);
-  ctx.lineTo(cx - 14, cy + 145);
-  ctx.moveTo(cx + 14, cy + 90);
-  ctx.lineTo(cx + 14, cy + 145);
+  ctx.moveTo(cx - 14, yMerkez + 87);
+  ctx.lineTo(cx - 14 - adim, yMerkez + 145);
+  ctx.moveTo(cx + 14, yMerkez + 87);
+  ctx.lineTo(cx + 14 + adim, yMerkez + 145);
   ctx.stroke();
 
-  // Gövde (Atlet / Kıyafet)
-  ctx.fillStyle = tip === "worker" ? "#334155" : "#64748b";
+  // Gövde (Kas sıkma modunda genişler)
+  const genislik = aksiyon === "flex" ? 72 : 62;
+  ctx.fillStyle = "#475569";
   ctx.beginPath();
-  ctx.roundRect(cx - 32, cy - 35 - nefes, 64, 82 + nefes, 14);
+  ctx.roundRect(cx - genislik / 2, yMerkez - 35 - nefes, genislik, 82 + nefes, 14);
   ctx.fill();
   ctx.strokeStyle = "#0f172a";
   ctx.lineWidth = 4;
   ctx.stroke();
 
-  // Kollar (Poz verme veya hareket animasyonu)
+  // KOLLAR VE AKSİYON HAREKETLERİ
   ctx.strokeStyle = "#fed7aa";
-  ctx.lineWidth = tip === "gym" ? 14 : 10;
-  ctx.lineCap = "round";
+  ctx.lineWidth = aksiyon === "flex" ? 15 : 11;
   ctx.beginPath();
-  // Sol kol (Kas sıkma pozu)
-  ctx.moveTo(cx - 32, cy - 22);
-  ctx.lineTo(cx - 65, cy - 5);
-  ctx.lineTo(cx - 52, cy - 42 + kolHareket * 0.4);
-  // Sağ kol
-  ctx.moveTo(cx + 32, cy - 22);
-  ctx.lineTo(cx + 60, cy + 10 - kolHareket * 0.5);
-  ctx.stroke();
 
-  // Kafa (Büyük sevimli 2D çizgi kafa)
+  if (aksiyon === "flex") {
+    // İki kolu da yukarı kaldırıp pazu sıkma pozu (Fotoğraftaki gibi!)
+    const sikma = Math.abs(dalga) * 8;
+    // Sol kol
+    ctx.moveTo(cx - 34, yMerkez - 22);
+    ctx.lineTo(cx - 72, yMerkez - 18);
+    ctx.lineTo(cx - 58, yMerkez - 62 - sikma);
+    // Sağ kol
+    ctx.moveTo(cx + 34, yMerkez - 22);
+    ctx.lineTo(cx + 72, yMerkez - 18);
+    ctx.lineTo(cx + 58, yMerkez - 62 - sikma);
+    ctx.stroke();
+
+    // Sarı enerji/kas parlama çizgileri (Fotoğraftaki sarı efekt!)
+    ctx.strokeStyle = "#facc15";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(cx - 65, yMerkez - 38, 16 + sikma * 0.4, Math.PI * 0.8, Math.PI * 1.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + 65, yMerkez - 38, 16 + sikma * 0.4, Math.PI * 1.5, Math.PI * 0.2);
+    ctx.stroke();
+
+  } else if (aksiyon === "celebrate") {
+    // Elleri havaya kaldırma
+    ctx.moveTo(cx - 30, yMerkez - 22);
+    ctx.lineTo(cx - 65, yMerkez - 85 + dalga * 12);
+    ctx.moveTo(cx + 30, yMerkez - 22);
+    ctx.lineTo(cx + 65, yMerkez - 85 - dalga * 12);
+    ctx.stroke();
+  } else {
+    // Doğal yürüme / konuşma kol sallanması
+    ctx.moveTo(cx - 30, yMerkez - 22);
+    ctx.lineTo(cx - 52 - adim * 0.6, yMerkez + 28);
+    ctx.moveTo(cx + 30, yMerkez - 22);
+    ctx.lineTo(cx + 52 + adim * 0.6, yMerkez + 28);
+    ctx.stroke();
+  }
+
+  // Kafa
   ctx.fillStyle = "#ffedd5";
   ctx.beginPath();
-  ctx.arc(cx, cy - 78 - nefes, 42, 0, Math.PI * 2);
+  ctx.arc(cx, yMerkez - 78 - nefes, 42, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#0f172a";
   ctx.lineWidth = 4;
@@ -132,48 +201,39 @@ function karakterCiz(ctx, cx, cy, frame, tip) {
 
   // Saç tutamı
   ctx.beginPath();
-  ctx.moveTo(cx - 8, cy - 120 - nefes);
-  ctx.quadraticCurveTo(cx + 5, cy - 135 - nefes, cx + 14, cy - 118 - nefes);
+  ctx.moveTo(cx - 8, yMerkez - 120 - nefes);
+  ctx.quadraticCurveTo(cx + 5, yMerkez - 135 - nefes, cx + 14, yMerkez - 118 - nefes);
   ctx.stroke();
 
-  // Yüz İfadesi (Kaşlar, gözler ve konuşan ağız)
+  // Kaş ve Gözler
   ctx.lineWidth = 3;
   ctx.beginPath();
-  // Kaşlar
-  ctx.moveTo(cx - 22, cy - 92 - nefes);
-  ctx.lineTo(cx - 8, cy - 87 - nefes);
-  ctx.moveTo(cx + 22, cy - 92 - nefes);
-  ctx.lineTo(cx + 8, cy - 87 - nefes);
-  // Kısık/odaklanmış gözler
-  ctx.moveTo(cx - 20, cy - 80 - nefes);
-  ctx.lineTo(cx - 8, cy - 80 - nefes);
-  ctx.moveTo(cx + 8, cy - 80 - nefes);
-  ctx.lineTo(cx + 20, cy - 80 - nefes);
+  ctx.moveTo(cx - 22, yMerkez - 92 - nefes);
+  ctx.lineTo(cx - 8, yMerkez - 87 - nefes);
+  ctx.moveTo(cx + 22, yMerkez - 92 - nefes);
+  ctx.lineTo(cx + 8, yMerkez - 87 - nefes);
+  ctx.moveTo(cx - 20, yMerkez - 80 - nefes);
+  ctx.lineTo(cx - 8, yMerkez - 80 - nefes);
+  ctx.moveTo(cx + 8, yMerkez - 80 - nefes);
+  ctx.lineTo(cx + 20, yMerkez - 80 - nefes);
   ctx.stroke();
 
   // Konuşan ağız
-  const agiz = Math.abs(Math.sin(frame * 0.4)) * 7 + 2;
+  const agiz = Math.abs(Math.sin(frame * 0.42)) * 8 + 2;
   ctx.fillStyle = "#0f172a";
   ctx.beginPath();
-  ctx.ellipse(cx, cy - 60 - nefes, 8, agiz / 2, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, yMerkez - 60 - nefes, 8, agiz / 2, 0, 0, Math.PI * 2);
   ctx.fill();
-
-  // Aynadaki yansıma silüeti
-  ctx.globalAlpha = 0.35;
-  ctx.fillStyle = "#ffedd5";
-  ctx.beginPath();
-  ctx.arc(412, cy - 75, 32, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 1.0;
 }
 
-function renderPOVVideo(baslik, hikaye, tip) {
+function renderPOVVideo(baslik, hikaye) {
   return new Promise(function(resolve) {
     const c = document.getElementById("cvs");
     const ctx = c.getContext("2d");
     const stream = c.captureStream(30);
     const rec = new MediaRecorder(stream);
     const chunks = [];
+    const aksiyon = aksiyonAlgila(baslik + " " + hikaye);
 
     rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
     rec.onstop = function() {
@@ -183,22 +243,21 @@ function renderPOVVideo(baslik, hikaye, tip) {
 
     rec.start();
     let frame = 0;
-    const toplamKare = 210; // 7 saniyelik TikTok POV videosu
+    const toplamKare = 210;
     const kelimeler = hikaye.toUpperCase().split(" ");
 
     function ciz() {
       if (frame >= toplamKare) { rec.stop(); return; }
 
-      // 1. Tam Siyah TikTok Arka Planı (Üst ve Alt Siyah Barlar)
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, c.width, c.height);
 
-      // 2. Üst Kalın Beyaz Başlık (Ekran görüntüsündeki gibi)
+      // Üst Başlık
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 28px 'Segoe UI', Arial, sans-serif";
       ctx.textAlign = "center";
       const baslikKelimeler = baslik.split(" ");
-      let bSatir = "";
+            let bSatir = "";
       let bY = 165;
       for (let i = 0; i < baslikKelimeler.length; i++) {
         const test = bSatir + baslikKelimeler.at(i) + " ";
@@ -212,10 +271,8 @@ function renderPOVVideo(baslik, hikaye, tip) {
       }
       ctx.fillText(bSatir.trim(), c.width / 2, bY);
 
-      // 3. Ortadaki 2D Çizgi Film Sahnesi
-      karakterCiz(ctx, 235, 480, frame, tip);
+      sahneVeKarakterCiz(ctx, 235, 480, frame, aksiyon);
 
-      // 4. Sahnenin Altındaki Kalın Siyah Çerçeveli Beyaz Alt Yazı (Ekran görüntüsündeki gibi)
       const aktifIdx = Math.floor((frame / toplamKare) * kelimeler.length);
       const aktifAltYazi = kelimeler.slice(Math.max(0, aktifIdx - 1), aktifIdx + 2).join(" ");
 
@@ -226,7 +283,6 @@ function renderPOVVideo(baslik, hikaye, tip) {
       ctx.fillStyle = "#ffffff";
       ctx.fillText(aktifAltYazi, c.width / 2, 645);
 
-      // 5. En Alttaki Takip / Yorum Çağrı Yazısı (Ekran görüntüsündeki gibi)
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 21px 'Segoe UI', Arial, sans-serif";
       ctx.fillText("Yeni partlar ve seriler için", c.width / 2, 765);
@@ -241,10 +297,9 @@ function renderPOVVideo(baslik, hikaye, tip) {
   });
 }
 
-async function povVideoUret() {
+async function povOlustur() {
   const baslik = document.getElementById("videoTitle").value.trim() || "Türk bir vücut geliştirmeci olsaydın (Part 1)";
   const hikaye = document.getElementById("storyText").value.trim();
-  const tip = document.getElementById("characterStyle").value;
   const st = document.getElementById("status");
   const vidEl = document.getElementById("vid");
   const spBtn = document.getElementById("speakBtn");
@@ -259,17 +314,17 @@ async function povVideoUret() {
   dl.style.display = "none";
   okunacakMetin = baslik + ". " + hikaye;
 
-  st.innerText = "Vortax AI viral POV videosunu ve seslendirmesini hazırlıyor (7 saniye)...";
+  st.innerText = "Vortax AI sahneyi, kas/hareket animasyonunu ve doğal sesi hazırlıyor...";
 
-  const videoUrl = await renderPOVVideo(baslik, hikaye, tip);
+  const videoUrl = await renderPOVVideo(baslik, hikaye);
   vidEl.src = videoUrl;
   vidEl.style.display = "block";
-    spBtn.style.display = "block";
+  spBtn.style.display = "block";
   dl.href = videoUrl;
   dl.style.display = "block";
-  st.innerText = "POV Videon hazır! İndirip doğrudan TikTok veya Reels'e yükleyebilirsin.";
+  st.innerText = "POV Videon hazır! Oynatabilir, sesini dinleyebilir veya indirebilirsin.";
 
-  sesOku();
+  dogalSesOku();
   btn.disabled = false;
 }
 </script>
