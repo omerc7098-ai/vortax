@@ -42,10 +42,8 @@
     <video id="outputVideo" controls autoplay loop playsinline></video>
 </div>
 
-<script type="module">
-    import { Client } from "https://jsdelivr.net";
-
-    // SADECE GEMINI API ANAHTARINI TIRNAKLARIN İÇİNE YAPIŞTIR
+<script>
+    // GEMINI API ANAHTARINI TIRNAKLARIN İÇİNE YAPIŞTIR
     const GEMINI_API_KEY = "AQ.Ab8RN6KHL7IMnLv61W_C4PtRqF5PcBZV_23dP9-Ic1IlbxeuRQ"; 
 
     async function translateToEnglish(text) {
@@ -66,7 +64,7 @@
         return data.candidates.content.parts.text.trim();
     }
 
-    window.generateVideo = async function() {
+    async function generateVideo() {
         const promptText = document.getElementById("prompt").value.trim();
         const statusDiv = document.getElementById("status");
         const videoElement = document.getElementById("outputVideo");
@@ -77,29 +75,50 @@
             return;
         }
 
+        if (!GEMINI_API_KEY) {
+            statusDiv.innerText = "Hata: Kodun içine Gemini API anahtarını yapıştırmamışsın!";
+            return;
+        }
+
         btn.disabled = true;
         videoElement.style.display = "none";
-        statusDiv.innerText = "1/2: Vortax metni yapay zeka için çeviriyor...";
+        statusDiv.innerText = "1/3: Vortax metni yapay zeka için çeviriyor...";
 
         try {
             const englishPrompt = await translateToEnglish(promptText);
-            statusDiv.innerText = "2/2: Vortax ücretsiz bulut sunucusuna bağlanıyor ve videoyu işliyor (1-2 dakika sürebilir)...";
+            statusDiv.innerText = "2/3: Çeviri tamam (" + englishPrompt + "). Ücretsiz video sunucusuna istek gönderiliyor...";
 
-            // Ücretsiz ZeroGPU video motoruna CORS engeli olmadan bağlan
-            const app = await Client.connect("Wan-AI/Wan2.1");
-            const result = await app.predict("/t2v_generation_async", { 
-                prompt: englishPrompt,
-                size: "1280*720",
-                watermark_wan: false,
-                seed: -1
+            // Doğrudan Gradio REST API kuyruğuna istek at (Dış kütüphanesiz, %100 tarayıcı uyumlu)
+            const callResponse = await fetch("https://hf.space", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    data: [englishPrompt, "1280*720", false, -1]
+                })
             });
 
-            if (result && result.data && result.data.video && result.data.video.url) {
-                videoElement.src = result.data.video.url;
+            if (!callResponse.ok) {
+                throw new Error("Video sunucusu şu an dolu (" + callResponse.status + "). Biraz bekleyip tekrar dene.");
+            }
+
+            const callData = await callResponse.json();
+            const eventId = callData.event_id;
+
+            statusDiv.innerText = "3/3: Vortax videoyu işliyor (Ücretsiz sunucu yoğunluğuna göre 1-2 dakika sürebilir, lütfen sayfadan çıkma)...";
+
+            // Sonucu stream üzerinden bekle
+            const resultResponse = await fetch(`https://hf.space/${eventId}`);
+            const resultText = await resultResponse.text();
+
+            // Gelen yanıttan video URL'sini ayıkla
+            const urlMatch = resultText.match(/"url":\s*"([^"]+\.mp4[^"]*)"/);
+            
+            if (urlMatch && urlMatch) {
+                videoElement.src = urlMatch;
                 videoElement.style.display = "block";
                 statusDiv.innerText = "Video hazır! Sağ alttaki üç noktadan indirebilirsin.";
             } else {
-                throw new Error("Sunucu şu an çok yoğun, birkaç dakika sonra tekrar dene.");
+                throw new Error("Ücretsiz sunucu yoğunluk nedeniyle sırayı iptal etti. 1 dakika sonra tekrar dene.");
             }
 
         } catch (error) {
