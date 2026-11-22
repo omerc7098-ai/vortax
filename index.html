@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortax AI - Ücretsiz Video Üretici</title>
+    <title>Vortax AI - Ücretsiz Video & Görsel Üretici</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #0d0d0d; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         .container { background-color: #1a1a1a; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: 0 4px 20px rgba(0, 230, 118, 0.15); border: 1px solid #2a2a2a; text-align: center; }
@@ -14,15 +14,21 @@
         button:hover { background-color: #00c853; }
         button:disabled { background-color: #555; cursor: not-allowed; }
         #status { margin-top: 15px; font-size: 14px; color: #ffab00; line-height: 1.4; }
-        video { width: 100%; border-radius: 10px; margin-top: 20px; display: none; }
+        video, img { width: 100%; border-radius: 10px; margin-top: 20px; display: none; }
+        .download-btn { display: none; background-color: #2979ff; color: white; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>VORTAX AI</h1>
-    <p>İstediğin dilde yaz, Vortax yapay zekası videoya dönüştürsün.</p>
+    <p>İstediğin dilde yaz, Vortax yapay zekası anında oluştursun.</p>
     
+    <select id="mode">
+        <option value="video">🎬 Metinden Video Üret (MP4)</option>
+        <option value="image">🖼️ Metinden Görsel Üret (Hızlı HD)</option>
+    </select>
+
     <select id="language">
         <option value="Türkçe">Türkçe</option>
         <option value="English">English</option>
@@ -36,10 +42,12 @@
 
     <textarea id="prompt" rows="4" placeholder="Örn: Uzayda kaykay yapan bir kedi, sinematik ışıklandırma..."></textarea>
     
-    <button id="generateBtn" onclick="generateVideo()">Vortax ile Video Oluştur</button>
+    <button id="generateBtn" onclick="generateMedia()">Vortax ile Oluştur</button>
     
     <div id="status"></div>
     <video id="outputVideo" controls autoplay loop playsinline></video>
+    <img id="outputImage" alt="Vortax AI Çıktısı" />
+    <a id="downloadLink" class="download-btn" download="vortax-ai-sonuc">⬇️ Cihaza İndir</a>
 </div>
 
 <script>
@@ -47,27 +55,26 @@
     const GEMINI_API_KEY = "AQ.Ab8RN6KHL7IMnLv61W_C4PtRqF5PcBZV_23dP9-Ic1IlbxeuRQ"; 
 
     async function translateToEnglish(text) {
+        if (!GEMINI_API_KEY) return text;
         const response = await fetch(`https://googleapis.com{GEMINI_API_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: `Translate the following video prompt into detailed English for an AI video generator. Return ONLY the English translation, nothing else: "${text}"` }] }]
+                contents: [{ parts: [{ text: `Translate the following prompt into detailed English for an AI generator. Return ONLY the English translation, nothing else: "${text}"` }] }]
             })
         });
-        
-        if (!response.ok) {
-            const errData = await response.json();
-            throw new Error("Çeviri hatası: " + (errData.error?.message || "Gemini anahtarını kontrol et."));
-        }
-        
+        if (!response.ok) return text;
         const data = await response.json();
         return data.candidates.content.parts.text.trim();
     }
 
-    async function generateVideo() {
+    async function generateMedia() {
         const promptText = document.getElementById("prompt").value.trim();
+        const mode = document.getElementById("mode").value;
         const statusDiv = document.getElementById("status");
         const videoElement = document.getElementById("outputVideo");
+        const imageElement = document.getElementById("outputImage");
+        const downloadLink = document.getElementById("downloadLink");
         const btn = document.getElementById("generateBtn");
 
         if (!promptText) {
@@ -75,55 +82,56 @@
             return;
         }
 
-        if (!GEMINI_API_KEY) {
-            statusDiv.innerText = "Hata: Kodun içine Gemini API anahtarını yapıştırmamışsın!";
-            return;
-        }
-
         btn.disabled = true;
         videoElement.style.display = "none";
-        statusDiv.innerText = "1/3: Vortax metni yapay zeka için çeviriyor...";
+        imageElement.style.display = "none";
+        downloadLink.style.display = "none";
+        statusDiv.innerText = "1/2: Vortax metni yapay zeka için hazırlıyor...";
 
         try {
             const englishPrompt = await translateToEnglish(promptText);
-            statusDiv.innerText = "2/3: Çeviri tamam (" + englishPrompt + "). Ücretsiz video sunucusuna istek gönderiliyor...";
+            const encodedPrompt = encodeURIComponent(englishPrompt);
+            const randomSeed = Math.floor(Math.random() * 100000);
 
-            // Doğrudan Gradio REST API kuyruğuna istek at (Dış kütüphanesiz, %100 tarayıcı uyumlu)
-            const callResponse = await fetch("https://hf.space", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    data: [englishPrompt, "1280*720", false, -1]
-                })
-            });
+            if (mode === "image") {
+                statusDiv.innerText = "2/2: Vortax yüksek çözünürlüklü görseli çiziyor (5-10 saniye)...";
+                const imgUrl = `https://pollinations.ai{encodedPrompt}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
+                
+                imageElement.onload = () => {
+                    imageElement.style.display = "block";
+                    downloadLink.href = imgUrl;
+                    downloadLink.download = "vortax-gorsel.jpg";
+                    downloadLink.style.display = "block";
+                    statusDiv.innerText = "Görsel hazır!";
+                    btn.disabled = false;
+                };
+                imageElement.onerror = () => {
+                    statusDiv.innerText = "Görsel sunucusu şu an yoğun, lütfen tekrar dene.";
+                    btn.disabled = false;
+                };
+                imageElement.src = imgUrl;
 
-            if (!callResponse.ok) {
-                throw new Error("Video sunucusu şu an dolu (" + callResponse.status + "). Biraz bekleyip tekrar dene.");
-            }
-
-            const callData = await callResponse.json();
-            const eventId = callData.event_id;
-
-            statusDiv.innerText = "3/3: Vortax videoyu işliyor (Ücretsiz sunucu yoğunluğuna göre 1-2 dakika sürebilir, lütfen sayfadan çıkma)...";
-
-            // Sonucu stream üzerinden bekle
-            const resultResponse = await fetch(`https://hf.space/${eventId}`);
-            const resultText = await resultResponse.text();
-
-            // Gelen yanıttan video URL'sini ayıkla
-            const urlMatch = resultText.match(/"url":\s*"([^"]+\.mp4[^"]*)"/);
-            
-            if (urlMatch && urlMatch) {
-                videoElement.src = urlMatch;
-                videoElement.style.display = "block";
-                statusDiv.innerText = "Video hazır! Sağ alttaki üç noktadan indirebilirsin.";
             } else {
-                throw new Error("Ücretsiz sunucu yoğunluk nedeniyle sırayı iptal etti. 1 dakika sonra tekrar dene.");
+                statusDiv.innerText = "2/2: Vortax videoyu işliyor (CORS engeli olmadan doğrudan sunucuya bağlanıldı, 30-60 saniye sürebilir)...";
+                const videoUrl = `https://pollinations.ai{encodedPrompt}?seed=${randomSeed}&nologo=true`;
+                
+                videoElement.onloadeddata = () => {
+                    videoElement.style.display = "block";
+                    downloadLink.href = videoUrl;
+                    downloadLink.download = "vortax-video.mp4";
+                    downloadLink.style.display = "block";
+                    statusDiv.innerText = "Video hazır!";
+                    btn.disabled = false;
+                };
+                videoElement.onerror = () => {
+                    statusDiv.innerText = "Ücretsiz video sunucusu şu an dolu veya API anahtarı istiyor. Üstteki menüden 'Metinden Görsel Üret' seçeneğini hemen kullanabilirsin!";
+                    btn.disabled = false;
+                };
+                videoElement.src = videoUrl;
             }
 
         } catch (error) {
             statusDiv.innerText = "Durum: " + error.message;
-        } finally {
             btn.disabled = false;
         }
     }
