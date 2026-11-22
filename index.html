@@ -3,52 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vortax AI - Ücretsiz Yapay Zeka Stüdyosu</title>
+    <title>Vortax AI - Video, Görsel & Seslendirme Stüdyosu</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #0d0d0d; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         .container { background-color: #1a1a1a; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: 0 4px 20px rgba(0, 230, 118, 0.15); border: 1px solid #2a2a2a; text-align: center; }
         h1 { font-size: 26px; margin-bottom: 5px; color: #00e676; letter-spacing: 1px; }
         p { font-size: 14px; color: #b0b0b0; margin-bottom: 20px; }
-        select, textarea, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #333; background-color: #262626; color: white; font-size: 16px; box-sizing: border-box; }
-        button { background-color: #00e676; color: #000; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
+        select, textarea, button { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid #333; background-color: #262626; color: white; font-size: 15px; box-sizing: border-box; }
+        button { background-color: #00e676; color: #000; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; font-size: 16px; }
         button:hover { background-color: #00c853; }
         button:disabled { background-color: #555; cursor: not-allowed; }
-        #status { margin-top: 15px; font-size: 14px; color: #ffab00; line-height: 1.4; }
-        img { width: 100%; border-radius: 10px; margin-top: 20px; display: none; }
-        .download-btn { display: none; background-color: #2979ff; color: white; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 12px; }
+        .voice-btn { background-color: #ff9100; color: #000; display: none; margin-top: 10px; }
+        .download-btn { display: none; background-color: #2979ff; color: white; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+        #status { margin-top: 12px; font-size: 14px; color: #ffab00; line-height: 1.4; }
+        img, video { width: 100%; border-radius: 10px; margin-top: 15px; display: none; }
+        .script-box { display: none; background-color: #222; padding: 14px; border-radius: 10px; margin-top: 15px; text-align: left; font-size: 14px; line-height: 1.5; color: #e0e0e0; border-left: 3px solid #00e676; }
+        canvas { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>VORTAX AI</h1>
-    <p>İstediğin dilde yaz, Vortax yapay zekası anında çizsin.</p>
+    <h1>VORTAX AI STUDIO</h1>
+    <p>Görsel, Sinematik Video ve Çok Dilli Seslendirme</p>
     
-    <select id="language">
-        <option value="Türkçe">Türkçe</option>
-        <option value="English">English</option>
-        <option value="Español">Español</option>
-        <option value="Deutsch">Deutsch</option>
-        <option value="Français">Français</option>
-        <option value="العربية">العربية</option>
-        <option value="Русский">Русский</option>
-        <option value="Diğer (Otomatik Algıla)">Diğer Tüm Diller (Otomatik)</option>
+    <select id="mode">
+        <option value="video_voice">🎬 Sinematik Video + Seslendirme Üret</option>
+        <option value="image_only">🖼️ Sadece Yüksek Çözünürlüklü Görsel Üret</option>
     </select>
 
-    <textarea id="prompt" rows="4" placeholder="Örn: Uzayda kaykay yapan bir kedi, sinematik ışıklandırma..."></textarea>
+    <select id="language">
+        <option value="tr-TR">🇹🇷 Türkçe</option>
+        <option value="en-US">🇺🇸 English</option>
+        <option value="es-ES">🇪🇸 Español</option>
+        <option value="de-DE">🇩🇪 Deutsch</option>
+        <option value="fr-FR">🇫🇷 Français</option>
+        <option value="ar-SA">🇸🇦 العربية</option>
+        <option value="ru-RU">🇷🇺 Русский</option>
+    </select>
+
+    <textarea id="prompt" rows="4" placeholder="Örn: Yağmurlu bir gecede neon ışıklı Tokyo sokaklarında yürüyen siberpunk bir samuray..."></textarea>
     
     <button id="generateBtn">Vortax ile Oluştur</button>
     
     <div id="status"></div>
-    <img id="outputImage" alt="Vortax AI Çıktısı" />
-    <a id="downloadLink" class="download-btn" target="_blank" download="vortax-ai-gorsel.jpg">⬇️ Tam Boyut Aç / İndir</a>
+    <canvas id="videoCanvas" width="720" height="720"></canvas>
+    <video id="outputVideo" controls autoplay loop playsinline></video>
+    <img id="outputImage" alt="Vortax AI Görseli" />
+    <div id="scriptBox" class="script-box"></div>
+    
+    <button id="speakBtn" class="voice-btn">🔊 Seslendirmeyi Dinle / Tekrar Oynat</button>
+    <a id="downloadLink" class="download-btn" download="vortax-ai-medya">⬇️ Cihaza İndir</a>
 </div>
 
 <script>
-    document.getElementById("generateBtn").addEventListener("click", function() {
+    // GEMINI API ANAHTARINI TIRNAKLARIN İÇİNE YAPIŞTIR
+    const GEMINI_API_KEY = "AQ.Ab8RN6KHL7IMnLv61W_C4PtRqF5PcBZV_23dP9-Ic1IlbxeuRQ"; 
+    let currentNarration = "";
+
+    function speakText(text, langCode) {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = langCode;
+        utterance.rate = 0.95;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // Görselden sinematik hareketli video dosyası (Zoom-in kamera efekti) üreten motor
+    function createVideoFromImage(imgElement) {
+        return new Promise((resolve) => {
+            const canvas = document.getElementById("videoCanvas");
+            const ctx = canvas.getContext("2d");
+            const stream = canvas.captureStream(30);
+            const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            const chunks = [];
+
+            recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+            recorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                resolve(URL.createObjectURL(blob));
+            };
+
+            recorder.start();
+            let frame = 0;
+            const totalFrames = 150; // 5 saniyelik 30 FPS sinematik video
+
+            function drawFrame() {
+                if (frame >= totalFrames) {
+                    recorder.stop();
+                    return;
+                }
+                const scale = 1 + (frame / totalFrames) * 0.18; // Sinematik yakınlaşma (Ken Burns efekti)
+                const w = canvas.width * scale;
+                const h = canvas.height * scale;
+                const x = (canvas.width - w) / 2;
+                const y = (canvas.height - h) / 2;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(imgElement, x, y, w, h);
+                frame++;
+                requestAnimationFrame(drawFrame);
+            }
+            drawFrame();
+        });
+    }
+
+    document.getElementById("speakBtn").addEventListener("click", function() {
+        const langCode = document.getElementById("language").value;
+        if (currentNarration) speakText(currentNarration, langCode);
+    });
+
+    document.getElementById("generateBtn").addEventListener("click", async function() {
         const promptText = document.getElementById("prompt").value.trim();
+        const mode = document.getElementById("mode").value;
+        const langSelect = document.getElementById("language");
+        const langCode = langSelect.value;
+        const langName = langSelect.options.at(langSelect.selectedIndex).text;
+        
         const statusDiv = document.getElementById("status");
         const imageElement = document.getElementById("outputImage");
+        const videoElement = document.getElementById("outputVideo");
+        const scriptBox = document.getElementById("scriptBox");
+        const speakBtn = document.getElementById("speakBtn");
         const downloadLink = document.getElementById("downloadLink");
         const btn = this;
 
@@ -57,42 +135,70 @@
             return;
         }
 
+        const cleanKey = GEMINI_API_KEY.trim();
+        if (!cleanKey) {
+            statusDiv.innerText = "Hata: Kodun içine Gemini API anahtarını yapıştırmamışsın!";
+            return;
+        }
+
         btn.disabled = true;
         imageElement.style.display = "none";
+        videoElement.style.display = "none";
+        scriptBox.style.display = "none";
+        speakBtn.style.display = "none";
         downloadLink.style.display = "none";
-        statusDiv.innerText = "Vortax AI görseli çiziyor (5-15 saniye)...";
+        window.speechSynthesis.cancel();
 
-        const encodedPrompt = encodeURIComponent(promptText + ", cinematic, ultra detailed, 8k");
-        const randomSeed = Math.floor(Math.random() * 999999);
+        try {
+            statusDiv.innerText = "1/3: Vortax AI sahne görselini çiziyor...";
+            
+            // 1. Adım: Görseli Üret (Gemini 2.5 Flash Image)
+            const imgResponse = await fetch("https://googleapis.com" + cleanKey, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: "Create a stunning, cinematic, ultra-detailed widescreen image for this scene: " + promptText }]
+                    }]
+                })
+            });
 
-        // 1. Motor: Pollinations Flux Modeli (Doğrudan <img> üzerinden CORS engeli olmadan yükler)
-        const primaryUrl = "https://pollinations.ai" + encodedPrompt + "?width=1024&height=1024&seed=" + randomSeed + "&model=flux&nologo=true";
-        
-        // 2. Yedek Motor: Turbo Modeli
-        const backupUrl = "https://pollinations.ai" + encodedPrompt + "?width=768&height=768&seed=" + randomSeed + "&model=turbo&nologo=true";
-
-        imageElement.onload = function() {
-            imageElement.style.display = "block";
-            downloadLink.href = imageElement.src;
-            downloadLink.style.display = "block";
-            statusDiv.innerText = "Görsel hazır! Üzerine basılı tutup kaydedebilir veya mavi butona basabilirsin.";
-            btn.disabled = false;
-        };
-
-        imageElement.onerror = function() {
-            // İlk sunucu yanıt vermezse otomatik yedek motora geç
-            if (imageElement.src !== backupUrl) {
-                statusDiv.innerText = "Yedek motora geçiliyor, lütfen bekle...";
-                imageElement.src = backupUrl;
-            } else {
-                statusDiv.innerText = "Sunucular şu an çok yoğun. Lütfen birkaç saniye sonra tekrar dene.";
-                btn.disabled = false;
+            const imgData = await imgResponse.json();
+            if (!imgResponse.ok) {
+                throw new Error((imgData.error && imgData.error.message) ? imgData.error.message : "Görsel motoru yanıt vermedi.");
             }
-        };
 
-        imageElement.src = primaryUrl;
-    });
-</script>
+            const firstCand = imgData.candidates ? imgData.candidates.at(0) : null;
+            const parts = (firstCand && firstCand.content && firstCand.content.parts) ? firstCand.content.parts : [];
+            const imagePart = parts.find(function(p) { return p.inlineData; });
 
-</body>
-</html>
+            if (!imagePart || !imagePart.inlineData) {
+                throw new Error("Görsel oluşturulamadı, lütfen sahneyi biraz daha farklı tarif et.");
+            }
+
+            const fullImgUrl = "data:" + (imagePart.inlineData.mimeType || "image/png") + ";base64," + imagePart.inlineData.data;
+
+            if (mode === "image_only") {
+                imageElement.src = fullImgUrl;
+                imageElement.style.display = "block";
+                downloadLink.href = fullImgUrl;
+                downloadLink.download = "vortax-gorsel.png";
+                downloadLink.style.display = "block";
+                statusDiv.innerText = "Görsel hazır!";
+                btn.disabled = false;
+                return;
+            }
+
+            // 2. Adım: Seçilen dilde video dış ses metni yaz (Gemini 2.5 Flash)
+            statusDiv.innerText = "2/3: Vortax " + langName + " seslendirme metnini yazıyor...";
+            const textResponse = await fetch("https://googleapis.com" + cleanKey, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: "Bu sahne için (" + langName + " dilinde) sadece 2 cümlelik, çok etkileyici bir belgesel/film dış ses (voiceover) anlatımı yaz. Başlık veya ekstra açıklama ekleme, sadece okunacak metni ver: " + promptText }]
+                    }]
+                })
+            });
+            const textData = await textResponse.json();
+    
