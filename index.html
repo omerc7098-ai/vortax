@@ -13,7 +13,7 @@
         button { background-color: #00e676; color: #000; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
         button:hover { background-color: #00c853; }
         button:disabled { background-color: #555; cursor: not-allowed; }
-        #status { margin-top: 15px; font-size: 14px; color: #ffab00; }
+        #status { margin-top: 15px; font-size: 14px; color: #ffab00; line-height: 1.4; }
         video { width: 100%; border-radius: 10px; margin-top: 20px; display: none; }
     </style>
 </head>
@@ -47,6 +47,7 @@
     const GEMINI_API_KEY = "AQ.Ab8RN6KHL7IMnLv61W_C4PtRqF5PcBZV_23dP9-Ic1IlbxeuRQ"; 
     const HF_TOKEN = "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";
 
+    // Güncel Hugging Face Router adresi
     const VIDEO_MODEL_URL = "https://huggingface.co";
 
     async function translateToEnglish(text) {
@@ -57,6 +58,12 @@
                 contents: [{ parts: [{ text: `Translate the following video prompt into detailed English for an AI video generator. Return ONLY the English translation, nothing else: "${text}"` }] }]
             })
         });
+        
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error("Çeviri hatası: " + (errData.error?.message || "Gemini API anahtarını kontrol et."));
+        }
+        
         const data = await response.json();
         return data.candidates[0].content.parts[0].text.trim();
     }
@@ -78,7 +85,7 @@
 
         try {
             const englishPrompt = await translateToEnglish(promptText);
-            statusDiv.innerText = "2/2: Vortax videoyu işliyor (Ücretsiz sunucu yoğunluğuna göre 1-2 dakika sürebilir)...";
+            statusDiv.innerText = "2/2: Vortax videoyu üretiyor (Ücretsiz sunucu yoğunluğuna göre 1-2 dakika sürebilir)...";
 
             const response = await fetch(VIDEO_MODEL_URL, {
                 method: "POST",
@@ -90,7 +97,8 @@
             });
 
             if (!response.ok) {
-                throw new Error("Vortax sunucusu şu an meşgul veya model yükleniyor. 30 saniye sonra tekrar dene.");
+                const errText = await response.text();
+                throw new Error("Video sunucusu yanıt vermedi (" + response.status + "). Biraz bekleyip tekrar dene.");
             }
 
             const videoBlob = await response.blob();
