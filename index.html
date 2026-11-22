@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortax AI - Ücretsiz Video Üretici</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #0d0d0d; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { background-color: #1a1a1a; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: 0 4px 20px rgba(0, 230, 118, 0.15); border: 1px solid #2a2a2a; text-align: center; }
+        h1 { font-size: 26px; margin-bottom: 5px; color: #00e676; letter-spacing: 1px; }
+        p { font-size: 14px; color: #b0b0b0; margin-bottom: 20px; }
+        select, textarea, button { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #333; background-color: #262626; color: white; font-size: 16px; box-sizing: border-box; }
+        button { background-color: #00e676; color: #000; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #00c853; }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+        #status { margin-top: 15px; font-size: 14px; color: #ffab00; }
+        video { width: 100%; border-radius: 10px; margin-top: 20px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>VORTAX AI</h1>
+    <p>İstediğin dilde yaz, Vortax yapay zekası videoya dönüştürsün.</p>
+    
+    <select id="language">
+        <option value="Türkçe">Türkçe</option>
+        <option value="English">English</option>
+        <option value="Español">Español</option>
+        <option value="Deutsch">Deutsch</option>
+        <option value="Français">Français</option>
+        <option value="العربية">العربية</option>
+        <option value="Русский">Русский</option>
+        <option value="Diğer (Otomatik Algıla)">Diğer Tüm Diller (Otomatik)</option>
+    </select>
+
+    <textarea id="prompt" rows="4" placeholder="Örn: Uzayda kaykay yapan bir kedi, sinematik ışıklandırma..."></textarea>
+    
+    <button id="generateBtn" onclick="generateVideo()">Vortax ile Video Oluştur</button>
+    
+    <div id="status"></div>
+    <video id="outputVideo" controls autoplay loop></video>
+</div>
+
+<script>
+    // ALDIĞIN ANAHTARLARI TIRNAKLARIN İÇİNE YAPIŞTIR
+    const GEMINI_API_KEY = "AQ.Ab8RN6KHL7IMnLv61W_C4PtRqF5PcBZV_23dP9-Ic1IlbxeuRQ"; 
+    const HF_TOKEN = "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";
+
+    const VIDEO_MODEL_URL = "https://huggingface.co";
+
+    async function translateToEnglish(text) {
+        const response = await fetch(`https://googleapis.com{GEMINI_API_KEY}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `Translate the following video prompt into detailed English for an AI video generator. Return ONLY the English translation, nothing else: "${text}"` }] }]
+            })
+        });
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text.trim();
+    }
+
+    async function generateVideo() {
+        const promptText = document.getElementById("prompt").value.trim();
+        const statusDiv = document.getElementById("status");
+        const videoElement = document.getElementById("outputVideo");
+        const btn = document.getElementById("generateBtn");
+
+        if (!promptText) {
+            alert("Lütfen bir metin yazın!");
+            return;
+        }
+
+        btn.disabled = true;
+        videoElement.style.display = "none";
+        statusDiv.innerText = "1/2: Vortax metni yapay zeka için çeviriyor...";
+
+        try {
+            const englishPrompt = await translateToEnglish(promptText);
+            statusDiv.innerText = "2/2: Vortax videoyu işliyor (Ücretsiz sunucu yoğunluğuna göre 1-2 dakika sürebilir)...";
+
+            const response = await fetch(VIDEO_MODEL_URL, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${HF_TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ inputs: englishPrompt })
+            });
+
+            if (!response.ok) {
+                throw new Error("Vortax sunucusu şu an meşgul veya model yükleniyor. 30 saniye sonra tekrar dene.");
+            }
+
+            const videoBlob = await response.blob();
+            const videoUrl = URL.createObjectURL(videoBlob);
+
+            videoElement.src = videoUrl;
+            videoElement.style.display = "block";
+            statusDiv.innerText = "Video hazır! Sağ alttaki üç noktadan indirebilirsin.";
+
+        } catch (error) {
+            statusDiv.innerText = "Hata: " + error.message;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
