@@ -3,40 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vortax AI - 3D Shorts & Reels Video Stüdyosu</title>
+<title>Vortax AI - Viral 3D İnsan Hikaye & Shorts Stüdyosu</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #09090b; color: #fff; display: flex; justify-content: center; padding: 15px; margin: 0; }
-  .box { background: #141418; padding: 20px; border-radius: 18px; width: 100%; max-width: 440px; border: 1px solid #27272a; text-align: center; box-shadow: 0 10px 30px rgba(0,230,118,0.1); }
+  .box { background: #141418; padding: 20px; border-radius: 18px; width: 100%; max-width: 460px; border: 1px solid #27272a; text-align: center; box-shadow: 0 10px 30px rgba(0,230,118,0.12); }
   h1 { color: #00e676; margin: 0 0 4px 0; font-size: 24px; letter-spacing: 1px; }
   .badge { display: inline-block; background: #00e67622; color: #00e676; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 12px; }
   p { color: #a1a1aa; font-size: 13px; margin: 0 0 15px 0; }
   select, textarea, button { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #27272a; background: #1f1f23; color: #fff; font-size: 14px; box-sizing: border-box; }
-  button { background: linear-gradient(90deg, #00e676, #00b0ff); color: #000; font-weight: bold; border: none; cursor: pointer; font-size: 15px; transition: 0.2s; }
-  button:disabled { background: #3f3f46; color: #888; }
-  .voice-btn { background: #ff9100; color: #000; display: none; margin-top: 8px; }
-  .dl-btn { display: none; background: #2979ff; color: #fff; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 8px; font-size: 14px; }
-  #status { margin-top: 10px; font-size: 13px; color: #ffab00; line-height: 1.4; }
-  video { width: 100%; max-width: 280px; aspect-ratio: 9/16; border-radius: 14px; margin: 15px auto 0 auto; display: none; border: 2px solid #27272a; background: #000; }
-  #scriptBox { display: none; background: #1f1f23; padding: 12px; border-radius: 10px; margin-top: 12px; text-align: left; font-size: 13px; border-left: 3px solid #00e676; }
-  canvas { display: none; }
+  button { background: linear-gradient(90deg, #00e676, #00b0ff); color: #000; font-weight: bold; border: none; cursor: pointer; font-size: 15px; }
+  .scene-card { background: #1f1f23; border: 1px solid #333; border-radius: 12px; padding: 14px; margin-top: 12px; text-align: left; }
+  .scene-title { color: #00e676; font-weight: bold; font-size: 13px; margin-bottom: 6px; }
+  .prompt-text { background: #121215; padding: 10px; border-radius: 8px; font-size: 12px; color: #e4e4e7; font-family: monospace; margin-bottom: 8px; line-height: 1.4; }
+  .copy-btn { background: #27272a; color: #fff; padding: 8px; font-size: 12px; border-radius: 6px; border: 1px solid #3f3f46; margin-bottom: 0; }
+  .voice-box { background: #1f1f23; border-left: 3px solid #ff9100; padding: 12px; border-radius: 8px; margin-top: 15px; text-align: left; font-size: 13px; }
+  .voice-btn { background: #ff9100; color: #000; margin-top: 8px; font-size: 13px; padding: 10px; }
+  .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
+  .tool-link { display: block; background: #2979ff; color: #fff; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 12px; font-weight: bold; text-align: center; }
+  #outputArea { display: none; margin-top: 15px; }
 </style>
 </head>
 <body>
 
 <div class="box">
   <h1>VORTAX AI STUDIO</h1>
-  <div class="badge">9:16 SHORTS • REELS • TIKTOK</div>
-  <p>3D Karakter, Dinamik Kamera, Alt Yazı & Çok Dilli Ses</p>
+  <div class="badge">3D İNSAN HİKAYESİ & SHORTS MOTORU</div>
+  <p>TikTok & Reels için 3D insan sahneleri ve seslendirme üret</p>
 
-  <select id="styleMode">
-    <option value="3d_pixar">🧊 3D Animasyon & Karakter (Pixar/Unreal Tarzı)</option>
-    <option value="realistic">🎬 Gerçekçi Sinematik İnsan & Sokak Sahnesi</option>
-    <option value="anime">⚔️ 3D Anime & Siberpunk Karakter</option>
+  <select id="characterType">
+    <option value="3D Pixar style young man wearing casual streetwear">🧑 3D Genç Adam Karakteri</option>
+    <option value="3D Pixar style young woman with expressive eyes">👩 3D Genç Kadın Karakteri</option>
+    <option value="3D Pixar style elderly wise man">👴 3D Yaşlı Bilge Adam</option>
+    <option value="3D Pixar style cute little boy">👦 3D Çocuk Karakteri</option>
+    <option value="3D stylized businessman in a modern suit">👔 3D İş İnsanı Karakteri</option>
   </select>
 
   <select id="lang">
-    <option value="tr-TR">🇹🇷 Türkçe Seslendirme</option>
-    <option value="en-US">🇺🇸 English Voiceover</option>
+    <option value="tr-TR">🇹🇷 Türkçe Hikaye & Ses</option>
+    <option value="en-US">🇺🇸 English Story & Voice</option>
     <option value="es-ES">🇪🇸 Español</option>
     <option value="de-DE">🇩🇪 Deutsch</option>
     <option value="fr-FR">🇫🇷 Français</option>
@@ -44,207 +48,95 @@
     <option value="ru-RU">🇷🇺 Русский</option>
   </select>
 
-  <textarea id="prompt" rows="3" placeholder="Örn: Yağmurlu gecede sokakta yürüyen genç bir adam, sinematik ışıklar..."></textarea>
-  <button id="btn" type="button" onclick="shortsOlustur()">🎬 9:16 Shorts Video & Ses Üret</button>
+  <textarea id="storyIdea" rows="3" placeholder="Örn: Yağmurlu gecede sokakta tek başına yürüyen ve hayata tutunmaya çalışan adam..."></textarea>
+  <button type="button" onclick="hikayeUret()">✨ 3D İnsan Sahnesi & Ses Oluştur</button>
 
-  <div id="status"></div>
-  <canvas id="cvs" width="540" height="960"></canvas>
-  <video id="vid" controls autoplay loop playsinline></video>
-  <div id="scriptBox"></div>
-  <button id="speakBtn" type="button" class="voice-btn" onclick="seslendir()">🔊 Seslendirmeyi Tekrar Dinle</button>
-  <a id="dl" class="dl-btn" download="vortax-shorts-9x16.webm">⬇️ Shorts Videosunu İndir</a>
+  <div id="outputArea">
+    <div id="scenesContainer"></div>
+
+    <div class="voice-box">
+      <strong style="color:#ff9100;">🎙️ Video Dış Ses Metni:</strong>
+      <div id="narrationText" style="margin-top:5px; line-height:1.4;"></div>
+      <button type="button" class="voice-btn" onclick="sesOku()">🔊 Seslendirmeyi Dinle</button>
+    </div>
+
+    <p style="margin-top:15px; font-size:12px; color:#a1a1aa;">Yukarıdaki 3D insan sahne komutlarını kopyalayıp aşağıdaki ücretsiz motorlarda hareketli videoya ve konuşmaya çevirebilirsin:</p>
+    <div class="tools-grid">
+      <a href="https://klingai.com" target="_blank" class="tool-link">🎬 Kling AI (3D Video)</a>
+      <a href="https://hailuoai.video" target="_blank" class="tool-link">🎥 Hailuo AI (MiniMax)</a>
+      <a href="https://pixverse.ai" target="_blank" class="tool-link">⚡ PixVerse AI</a>
+      <a href="https://hedra.com" target="_blank" class="tool-link">🗣️ Hedra (Konuşturma)</a>
+    </div>
+  </div>
 </div>
 
 <script>
-let konusmaMetni = "";
+let okunacakMetin = "";
 
-function seslendir() {
-  if (!konusmaMetni || !('speechSynthesis' in window)) return;
+function kopyala(id, btn) {
+  const metin = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(metin);
+  const eski = btn.innerText;
+  btn.innerText = "✅ Kopyalandı!";
+  setTimeout(function() { btn.innerText = eski; }, 1500);
+}
+
+function sesOku() {
+  if (!okunacakMetin || !('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(konusmaMetni);
+  const u = new SpeechSynthesisUtterance(okunacakMetin);
   u.lang = document.getElementById("lang").value;
-  u.rate = 0.96;
-  u.pitch = 1.02;
+  u.rate = 0.95;
   window.speechSynthesis.speak(u);
 }
 
-function karakterSahnesiGetir(metin, stil) {
-  return new Promise(function(resolve) {
-    let stilEtiketi = "3D Pixar Disney style character animation, Unreal Engine 5 render, expressive face, vibrant lighting, 8k";
-    if (stil === "realistic") stilEtiketi = "photorealistic cinematic film still, real human walking on street, 85mm lens, shallow depth of field, 8k";
-    if (stil === "anime") stilEtiketi = "3D stylized cyberpunk anime character, neon city street, dynamic pose, masterpiece";
+function hikayeUret() {
+  const fikir = document.getElementById("storyIdea").value.trim();
+  const karakter = document.getElementById("characterType").value;
+  const lang = document.getElementById("lang").value;
 
-    const tamKomut = encodeURIComponent(metin + ", " + stilEtiketi + ", vertical 9:16 composition");
-    const seed = Math.floor(Math.random() * 999999);
-    
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    
-    const zamanAsimi = setTimeout(function() {
-      resolve(null);
-    }, 12000);
+  if (!fikir) { alert("Lütfen bir sahne veya hikaye fikri yaz knk!"); return; }
 
-    img.onload = function() {
-      clearTimeout(zamanAsimi);
-      resolve(img);
-    };
+  const stil = "3D Pixar Disney animation style, Unreal Engine 5 render, realistic human skin texture, expressive facial emotion, cinematic dramatic lighting, 9:16 vertical aspect ratio, 8k resolution";
 
-    img.onerror = function() {
-      clearTimeout(zamanAsimi);
-      resolve(null);
-    };
-
-    img.src = "https://pollinations.ai" + tamKomut + "?width=540&height=960&seed=" + seed + "&nologo=true";
-  });
-}
-
-function dikeyVideoRender(arkaPlanResmi, metin) {
-  return new Promise(function(resolve) {
-    const c = document.getElementById("cvs");
-    const ctx = c.getContext("2d");
-    const stream = c.captureStream(30);
-    const rec = new MediaRecorder(stream);
-    const chunks = [];
-
-    rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
-    rec.onstop = function() {
-      const b = new Blob(chunks, { type: "video/webm" });
-      resolve(URL.createObjectURL(b));
-    };
-
-    rec.start();
-    let frame = 0;
-    const toplamKare = 180;
-    const kelimeler = metin.split(" ");
-
-    function kareCiz() {
-      if (frame >= toplamKare) {
-        rec.stop();
-        return;
-      }
-
-      ctx.clearRect(0, 0, c.width, c.height);
-
-      if (arkaPlanResmi) {
-        const zoom = 1.05 + (frame / toplamKare) * 0.16;
-        const sallantiX = Math.sin(frame * 0.12) * 8;
-        const sallantiY = Math.abs(Math.cos(frame * 0.12)) * 6;
-        const w = c.width * zoom;
-        const h = c.height * zoom;
-        const x = (c.width - w) / 2 + sallantiX;
-        const y = (c.height - h) / 2 - sallantiY;
-        ctx.drawImage(arkaPlanResmi, x, y, w, h);
-      } else {
-        const grad = ctx.createLinearGradient(0, 0, 0, c.height);
-        grad.addColorStop(0, "#090d16");
-        grad.addColorStop(0.6, "#16213e");
-        grad.addColorStop(1, "#0f3460");
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, c.width, c.height);
-
-        for (let i = 0; i < 6; i++) {
-          const yPos = ((frame * 4 + i * 160) % c.height);
-          const genislik = 40 + (yPos / c.height) * 260;
-          ctx.strokeStyle = "rgba(0, 230, 118, 0.35)";
-          ctx.lineWidth = 3;
-          ctx.strokeRect((c.width - genislik) / 2, yPos, genislik, 12);
-        }
-
-        const adim = Math.sin(frame * 0.2) * 14;
-        const cx = c.width / 2;
-        const cy = c.height * 0.48 + Math.abs(Math.cos(frame * 0.2)) * 8;
-
-        ctx.fillStyle = "#00e676";
-        ctx.beginPath();
-        ctx.arc(cx, cy - 90, 32, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#09090b";
-        const agizAcikligi = Math.abs(Math.sin(frame * 0.45)) * 10 + 2;
-        ctx.fillRect(cx - 10, cy - 82, 20, agizAcikligi);
-
-        ctx.strokeStyle = "#00e676";
-        ctx.lineWidth = 10;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - 55);
-        ctx.lineTo(cx, cy + 35);
-        ctx.moveTo(cx, cy - 40);
-        ctx.lineTo(cx - 35 - adim, cy + 10);
-        ctx.moveTo(cx, cy - 40);
-        ctx.lineTo(cx + 35 + adim, cy + 10);
-        ctx.moveTo(cx, cy + 35);
-        ctx.lineTo(cx - 25 + adim, cy + 115);
-        ctx.moveTo(cx, cy + 35);
-        ctx.lineTo(cx + 25 - adim, cy + 115);
-        ctx.stroke();
-      }
-
-      const altGrad = ctx.createLinearGradient(0, c.height * 0.65, 0, c.height);
-      altGrad.addColorStop(0, "rgba(0,0,0,0)");
-      altGrad.addColorStop(1, "rgba(0,0,0,0.88)");
-      ctx.fillStyle = altGrad;
-      ctx.fillRect(0, c.height * 0.65, c.width, c.height * 0.35);
-
-      ctx.fillStyle = "rgba(0, 230, 118, 0.9)";
-      ctx.font = "bold 16px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("VORTAX AI • 3D STUDIO", c.width / 2, 45);
-
-      const aktifKelimeIndex = Math.floor((frame / toplamKare) * kelimeler.length);
-      const gosterilecekMetin = kelimeler.slice(Math.max(0, aktifKelimeIndex - 2), aktifKelimeIndex + 3).join(" ");
-
-      ctx.fillStyle = "#ffea00";
-      ctx.font = "bold 30px sans-serif";
-      ctx.shadowColor = "black";
-      ctx.shadowBlur = 8;
-      ctx.fillText(gosterilecekMetin, c.width / 2, c.height * 0.80);
-      ctx.shadowBlur = 0;
-
-      frame++;
-      requestAnimationFrame(kareCiz);
+  const sahneler = [
+    {
+      baslik: "🎬 Sahne 1: Açılış & Yakın Yüz Planı",
+      komut: "Close-up cinematic portrait of " + karakter + ", deep emotional expression, situation: " + fikir + ", " + stil
+    },
+    {
+      baslik: "🎬 Sahne 2: Sokakta Yürüyüş & Hareket Anı",
+      komut: "Full body dynamic tracking shot of " + karakter + " walking on the street during: " + fikir + ", atmospheric depth, realistic motion, " + stil
+    },
+    {
+      baslik: "🎬 Sahne 3: Duygusal Doruk & Konuşma",
+      komut: "Medium shot of " + karakter + " speaking emotionally to the camera, natural lip movement, dramatic rim light, " + stil
     }
+  ];
 
-    kareCiz();
-  });
-}
+  const container = document.getElementById("scenesContainer");
+  container.innerHTML = "";
 
-async function shortsOlustur() {
-  const txt = document.getElementById("prompt").value.trim();
-  const stil = document.getElementById("styleMode").value;
-  const st = document.getElementById("status");
-  const vidEl = document.getElementById("vid");
-  const sb = document.getElementById("scriptBox");
-  const spBtn = document.getElementById("speakBtn");
-  const dl = document.getElementById("dl");
-  const btn = document.getElementById("btn");
+  for (let i = 0; i < sahneler.length; i++) {
+    const s = sahneler.at(i);
+    const pId = "prompt_" + i;
+    container.innerHTML +=
+      '<div class="scene-card">' +
+      '<div class="scene-title">' + s.baslik + '</div>' +
+      '<div class="prompt-text" id="' + pId + '">' + s.komut + '</div>' +
+      '<button type="button" class="copy-btn" onclick="kopyala(\'' + pId + '\', this)">📋 3D Sahne Komutunu Kopyala</button>' +
+      '</div>';
+  }
 
-  if (!txt) { alert("Lütfen bir sahne yaz knk!"); return; }
+  if (lang === "tr-TR") {
+    okunacakMetin = "Bazen kalabalık sokaklarda tek başına yürürken bile içindeki fırtınayı kimse duymaz. " + fikir + " Ama attığın her adım seni daha güçlü kılar.";
+  } else {
+    okunacakMetin = "Sometimes even when walking alone on crowded streets, nobody hears the storm inside you. " + fikir + " Yet every step you take makes you stronger.";
+  }
 
-  btn.disabled = true;
-  vidEl.style.display = "none";
-  sb.style.display = "none";
-  spBtn.style.display = "none";
-  dl.style.display = "none";
-  konusmaMetni = txt;
-
-  st.innerText = "1/2: Vortax 3D karakter sahnesini hazırlıyor (maks. 12 sn)...";
-  const sahneGorseli = await karakterSahnesiGetir(txt, stil);
-
-  st.innerText = "2/2: 9:16 Dikey Shorts videosu, yürüme kamerası ve ses işleniyor...";
-  const videoUrl = await dikeyVideoRender(sahneGorseli, txt);
-
-  vidEl.src = videoUrl;
-  vidEl.style.display = "block";
-  sb.innerText = "🎙️ Seslendirme & Alt Yazı: " + konusmaMetni;
-  sb.style.display = "block";
-  spBtn.style.display = "block";
-  dl.href = videoUrl;
-  dl.style.display = "block";
-  st.innerText = "9:16 Shorts videon hazır! İndirip TikTok, Reels veya YouTube'da paylaşabilirsin.";
-
-    seslendir();
-  btn.disabled = false;
+  document.getElementById("narrationText").innerText = okunacakMetin;
+  document.getElementById("outputArea").style.display = "block";
+  sesOku();
 }
 </script>
 </body>
