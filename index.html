@@ -15,7 +15,7 @@
   .voice-btn { background: #ff9100; color: #000; display: none; }
   .dl-btn { display: none; background: #2979ff; color: #fff; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; margin-top: 8px; }
   #status { margin-top: 10px; font-size: 14px; color: #ffab00; }
-  img, video { width: 100%; border-radius: 10px; margin-top: 15px; display: none; }
+  video { width: 100%; border-radius: 10px; margin-top: 15px; display: none; border: 1px solid #333; }
   #scriptBox { display: none; background: #222; padding: 12px; border-radius: 8px; margin-top: 12px; text-align: left; font-size: 13px; border-left: 3px solid #00e676; }
   canvas { display: none; }
 </style>
@@ -24,11 +24,13 @@
 
 <div class="box">
   <h1>VORTAX AI STUDIO</h1>
-  <p>Görsel, Video ve Çok Dilli Seslendirme</p>
+  <p>Sinematik Video & Çok Dilli Seslendirme Motoru</p>
 
-  <select id="mode">
-    <option value="video">🎬 Video + Seslendirme Üret</option>
-    <option value="image">🖼️ Sadece Görsel Üret</option>
+  <select id="theme">
+    <option value="cyber">🌃 Siberpunk & Neon Atmosfer</option>
+    <option value="space">🌌 Uzay & Galaksi Teması</option>
+    <option value="nature">🌲 Doğa & Gün Batımı Teması</option>
+    <option value="matrix">💻 Dijital Matrix & Veri Akışı</option>
   </select>
 
   <select id="lang">
@@ -41,144 +43,164 @@
     <option value="ru-RU">🇷🇺 Русский</option>
   </select>
 
-  <textarea id="prompt" rows="3" placeholder="Sahneyi buraya yaz..."></textarea>
-  <button id="btn" type="button" onclick="baslat()">Vortax ile Oluştur</button>
+  <textarea id="prompt" rows="3" placeholder="Videoda anlatılacak ve ekranda işlenecek sahneyi yaz..."></textarea>
+  <button id="btn" type="button" onclick="olustur()">Vortax ile Video & Ses Oluştur</button>
 
   <div id="status"></div>
   <canvas id="cvs" width="640" height="640"></canvas>
   <video id="vid" controls autoplay loop playsinline></video>
-  <img id="img" alt="Sonuç" />
   <div id="scriptBox"></div>
-  <button id="speakBtn" type="button" class="voice-btn" onclick="seslendir()">🔊 Seslendirmeyi Dinle</button>
-  <a id="dl" class="dl-btn" download="vortax-ai">⬇️ Cihaza İndir</a>
+  <button id="speakBtn" type="button" class="voice-btn" onclick="seslendir()">🔊 Seslendirmeyi Tekrar Dinle</button>
+  <a id="dl" class="dl-btn" download="vortax-video.webm">⬇️ Videoyu Cihaza İndir</a>
 </div>
 
 <script>
-const GEMINI_API_KEY = "AQ.Ab8RN6KHL7IMnLv61W_C4PtRqF5PcBZV_23dP9-Ic1IlbxeuRQ";
-let sesMetni = "";
+let aktifMetin = "";
 
 function seslendir() {
-  if (!sesMetni || !('speechSynthesis' in window)) return;
+  if (!aktifMetin || !('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(sesMetni);
+  const u = new SpeechSynthesisUtterance(aktifMetin);
   u.lang = document.getElementById("lang").value;
+  u.rate = 0.95;
   window.speechSynthesis.speak(u);
 }
 
-function videoYap(resim) {
+function temaRenkleri(tema) {
+  if (tema === "space") return ["#050114", "#1a0638", "#00d4ff"];
+  if (tema === "nature") return ["#1c0f0a", "#4a1c11", "#ff9e00"];
+  if (tema === "matrix") return ["#000a00", "#002605", "#00ff41"];
+  return ["#0a0514", "#1f0836", "#00e676"];
+}
+
+function sahneVideoyaCevir(metin, tema) {
   return new Promise(function(resolve) {
     const c = document.getElementById("cvs");
     const ctx = c.getContext("2d");
-    const stream = c.captureStream(25);
+    const renkler = temaRenkleri(tema);
+    const stream = c.captureStream(30);
     const rec = new MediaRecorder(stream);
     const chunks = [];
+
     rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
     rec.onstop = function() {
       const b = new Blob(chunks, { type: "video/webm" });
       resolve(URL.createObjectURL(b));
     };
-    rec.start();
-    let f = 0;
-    function ciz() {
-      if (f >= 100) { rec.stop(); return; }
-      const s = 1 + (f / 100) * 0.15;
-      const w = c.width * s;
-      const h = c.height * s;
-      ctx.clearRect(0, 0, c.width, c.height);
-      ctx.drawImage(resim, (c.width - w) / 2, (c.height - h) / 2, w, h);
-      f++;
-      requestAnimationFrame(ciz);
+
+    // Hareketli ışık parçacıkları oluştur
+    const parcaciklar = [];
+    for (let i = 0; i < 45; i++) {
+      parcaciklar.push({
+        x: Math.random() * c.width,
+        y: Math.random() * c.height,
+        r: Math.random() * 4 + 1.5,
+        vx: (Math.random() - 0.5) * 2.5,
+        vy: (Math.random() - 0.5) * 2.5
+      });
     }
-    ciz();
+
+    rec.start();
+    let frame = 0;
+    const toplamKare = 150; // 5 saniyelik akıcı 30 FPS video
+
+    function kareCiz() {
+      if (frame >= toplamKare) {
+        rec.stop();
+        return;
+      }
+
+      // 1. Dinamik arka plan gradyanı
+      const grad = ctx.createRadialGradient(c.width/2, c.height/2, 40 + frame, c.width/2, c.height/2, 450);
+      grad.addColorStop(0, renkler.item ? renkler.item(1) : renkler.at(1));
+      grad.addColorStop(1, renkler.at(0));
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      // 2. Hareketli parçacıklar
+      ctx.fillStyle = renkler.at(2);
+      for (let i = 0; i < parcaciklar.length; i++) {
+        const p = parcaciklar.at(i);
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > c.width) p.vx *= -1;
+        if (p.y < 0 || p.y > c.height) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 3. Sinematik kamera çerçevesi ve VORTAX AI filigranı
+      ctx.strokeStyle = renkler.at(2);
+      ctx.lineWidth = 3;
+      ctx.strokeRect(25, 25, c.width - 50, c.height - 50);
+
+      ctx.fillStyle = renkler.at(2);
+      ctx.font = "bold 18px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("VORTAX AI STUDIO", c.width / 2, 65);
+
+      // 4. Kullanıcının yazdığı sahne metnini sinematik alt yazı olarak yerleştir
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 24px sans-serif";
+      const kelimeler = metin.split(" ");
+      let satir = "";
+      let y = c.height / 2 - 20;
+
+      for (let n = 0; n < kelimeler.length; n++) {
+        const testSatir = satir + kelimeler.at(n) + " ";
+        if (ctx.measureText(testSatir).width > 500 && n > 0) {
+          ctx.fillText(satir, c.width / 2, y);
+          satir = kelimeler.at(n) + " ";
+          y += 34;
+        } else {
+          satir = testSatir;
+        }
+      }
+      ctx.fillText(satir, c.width / 2, y);
+
+      frame++;
+      requestAnimationFrame(kareCiz);
+    }
+
+    kareCiz();
   });
 }
 
-async function baslat() {
+async function olustur() {
   const txt = document.getElementById("prompt").value.trim();
-  const mode = document.getElementById("mode").value;
-  const langSelect = document.getElementById("lang");
-  const langName = langSelect.options.item(langSelect.selectedIndex).text;
+  const tema = document.getElementById("theme").value;
   const st = document.getElementById("status");
-  const imgEl = document.getElementById("img");
   const vidEl = document.getElementById("vid");
   const sb = document.getElementById("scriptBox");
   const spBtn = document.getElementById("speakBtn");
   const dl = document.getElementById("dl");
   const btn = document.getElementById("btn");
 
-  if (!txt) { alert("Metin yaz knk!"); return; }
-  const key = GEMINI_API_KEY.trim();
-  if (!key) { st.innerText = "Hata: API anahtarı boş!"; return; }
+  if (!txt) { alert("Lütfen bir metin yaz knk!"); return; }
 
   btn.disabled = true;
-  imgEl.style.display = "none";
   vidEl.style.display = "none";
   sb.style.display = "none";
   spBtn.style.display = "none";
   dl.style.display = "none";
-  st.innerText = "1/3: Görsel çiziliyor...";
+  aktifMetin = txt;
+
+  st.innerText = "Vortax AI videoyu ve seslendirmeyi oluşturuyor (5 saniye)...";
 
   try {
-    const url1 = "https://googleapis.com" + key;
-    const r1 = await fetch(url1, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: "Create a cinematic detailed image: " + txt }] }]
-      })
-    });
-    const d1 = await r1.json();
-    if (!r1.ok) throw new Error(d1.error ? d1.error.message : "Görsel hatası");
-
-    const cand = d1.candidates.item ? d1.candidates.item(0) : d1.candidates.at(0);
-    const part = cand.content.parts.find(function(p) { return p.inlineData; });
-    if (!part) throw new Error("Görsel üretilemedi, başka bir şey yaz.");
-
-    const imgUrl = "data:" + part.inlineData.mimeType + ";base64," + part.inlineData.data;
-
-    if (mode === "image") {
-      imgEl.src = imgUrl;
-      imgEl.style.display = "block";
-      dl.href = imgUrl;
-      dl.download = "vortax.png";
-      dl.style.display = "block";
-      st.innerText = "Görsel hazır!";
-      btn.disabled = false;
-      return;
-    }
-
-    st.innerText = "2/3: Seslendirme metni yazılıyor...";
-    const url2 = "https://googleapis.com" + key;
-    const r2 = await fetch(url2, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: langName + " dilinde bu sahne için 2 cümlelik kısa bir dış ses metni yaz: " + txt }] }]
-      })
-    });
-    const d2 = await r2.json();
-    const textPart = d2.candidates.at(0).content.parts.at(0);
-    sesMetni = textPart.text.trim();
-
-    st.innerText = "3/3: Video ve ses birleştiriliyor...";
-    const tmp = new Image();
-    tmp.src = imgUrl;
-    await new Promise(function(r) { tmp.onload = r; });
-
-    const vUrl = await videoYap(tmp);
-    vidEl.src = vUrl;
+    const videoUrl = await sahneVideoyaCevir(txt, tema);
+    vidEl.src = videoUrl;
     vidEl.style.display = "block";
-    sb.innerText = "🎙️ " + sesMetni;
+    sb.innerText = "🎙️ Seslendirilen Metin: " + aktifMetin;
     sb.style.display = "block";
     spBtn.style.display = "block";
-    dl.href = vUrl;
-    dl.download = "vortax.webm";
+    dl.href = videoUrl;
     dl.style.display = "block";
-    st.innerText = "Video ve seslendirme hazır!";
+    st.innerText = "Video ve seslendirme hazır! İndirebilir veya tekrar dinleyebilirsin.";
     seslendir();
-
-  } catch (err) {
-    st.innerText = "Bilgi: " + err.message;
+  } catch (e) {
+    st.innerText = "Hata: " + e.message;
   } finally {
     btn.disabled = false;
   }
