@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vortax AI - Serbest POV Video & Doğal Ses Stüdyosu</title>
+<title>Vortax AI - Sınırsız POV Animasyon Stüdyosu</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #09090b; color: #fff; display: flex; justify-content: center; padding: 15px; margin: 0; }
   .box { background: #141418; padding: 20px; border-radius: 18px; width: 100%; max-width: 440px; border: 1px solid #27272a; text-align: center; box-shadow: 0 10px 30px rgba(0,230,118,0.12); }
@@ -24,24 +24,24 @@
 
 <div class="box">
   <h1>VORTAX AI STUDIO</h1>
-  <div class="badge">SINIRSIZ POV HİKAYE & DOĞAL SES</div>
-  <p>Aklındaki her senaryoyu yaz; karakter hareket etsin, konuşsun!</p>
+  <div class="badge">SINIRSIZ ÇÖP ADAM POV & SES MOTORU</div>
+  <p>İstediğin başlığı ve sahneyi yaz; çöp adam her harekete bürünsün!</p>
 
-  <input type="text" id="videoTitle" placeholder="Başlık: Örn: Türk bir vücut geliştirmeci olsaydın (Part 1)" />
+  <input type="text" id="videoTitle" placeholder="Başlık yaz: Örn: Okulda sınavdasın (Part 1)" />
 
   <select id="voiceGender">
-    <option value="male">🎙️ Doğal Erkek Sesi (Derin & Akıcı)</option>
-    <option value="female">🎙️ Doğal Kadın Sesi (Net & Akıcı)</option>
+    <option value="male">🎙️ Doğal Erkek Sesi (Akıcı)</option>
+    <option value="female">🎙️ Doğal Kadın Sesi (Akıcı)</option>
   </select>
 
-  <textarea id="storyText" rows="3" placeholder="Ne yazarsan karakter onu yapar! Örn: Aynanın karşısına geçip kollarını kaldırıyor ve kaslarını sıkıyor..."></textarea>
+  <textarea id="storyText" rows="3" placeholder="Sahneyi anlat: Örn: Sınav kağıdına bakıyorsun ama hiçbir soruyu bilmediğin için terleyip panik yapıyorsun..."></textarea>
 
   <button id="btn" type="button" onclick="povOlustur()">🎬 Sınırsız POV Videosu Oluştur</button>
 
   <div id="status"></div>
   <canvas id="cvs" width="540" height="960"></canvas>
   <video id="vid" controls autoplay loop playsinline></video>
-  <button id="speakBtn" type="button" class="voice-btn" onclick="dogalSesOku()">🔊 Doğal İnsan Sesini Dinle</button>
+  <button id="speakBtn" type="button" class="voice-btn" onclick="dogalSesOku()">🔊 Doğal Sesi Tekrar Dinle</button>
   <a id="dl" class="dl-btn" download="vortax-pov-video.webm">⬇️ TikTok / Reels Videosunu İndir</a>
 </div>
 
@@ -64,7 +64,6 @@ function dogalSesOku() {
   const u = new SpeechSynthesisUtterance(okunacakMetin);
   u.lang = "tr-TR";
 
-  // Cihazdaki en doğal Google / Natural Türkçe insan sesini bul
   const trSesler = yukluSesler.filter(function(v) { return v.lang.toLowerCase().includes("tr"); });
   if (trSesler.length > 0) {
     const dogalSes = trSesler.find(function(v) {
@@ -73,156 +72,180 @@ function dogalSesOku() {
     u.voice = dogalSes || trSesler.at(0);
   }
 
-  // Robotikliği silen insan tonlaması ve hızı
-  u.rate = 0.96;
+  u.rate = 0.97;
   u.pitch = cinsiyet === "male" ? 0.85 : 1.08;
   window.speechSynthesis.speak(u);
 }
 
-function aksiyonAlgila(metin) {
-  const m = metin.toLowerCase();
-  if (m.includes("kas") || m.includes("poz") || m.includes("kol") || m.includes("spor") || m.includes("vücut")) return "flex";
-  if (m.includes("yürü") || m.includes("koş") || m.includes("git") || m.includes("sokak")) return "walk";
-  if (m.includes("sevin") || m.includes("dans") || m.includes("kutla") || m.includes("mutlu") || m.includes("el")) return "celebrate";
-  return "talk";
+function sahneAnalizEt(tamMetin) {
+  const m = tamMetin.toLowerCase();
+  if (m.includes("okul") || m.includes("sınav") || m.includes("ders") || m.includes("hoca") || m.includes("sınıf") || m.includes("yaz")) return "exam";
+  if (m.includes("kas") || m.includes("poz") || m.includes("spor") || m.includes("vücut") || m.includes("güç")) return "flex";
+  if (m.includes("yürü") || m.includes("koş") || m.includes("sokak") || m.includes("kaç") || m.includes("git")) return "walk";
+  if (m.includes("ağla") || m.includes("üzül") || m.includes("panik") || m.includes("kork") || m.includes("stres")) return "panic";
+  if (m.includes("sevin") || m.includes("dans") || m.includes("zıpla") || m.includes("mutlu") || m.includes("kazan")) return "jump";
+  if (m.includes("uyu") || m.includes("yat") || m.includes("yorgun") || m.includes("sabah")) return "sleep";
+  return "dynamic";
 }
 
-function sahneVeKarakterCiz(ctx, cx, cy, frame, aksiyon) {
-  const nefes = Math.sin(frame * 0.14) * 3;
-  const dalga = Math.sin(frame * 0.18);
+function copAdamSahneCiz(ctx, frame, mod) {
+  const dalga = Math.sin(frame * 0.2);
+  const hizliDalga = Math.sin(frame * 0.45);
+  let cx = 270;
+  let cy = 475;
 
-  // Arka Plan (Yürüme varsa sokak, diğerlerinde oda/ayna sahnesi)
-  if (aksiyon === "walk") {
+  // 1. ORTAM ÇİZİMİ (Yazılan konuya göre otomatik değişir)
+  if (mod === "exam") {
+    // Sınıf ortamı ve yazı tahtası
+    ctx.fillStyle = "#f1f5f9";
+    ctx.fillRect(40, 260, 460, 420);
+    ctx.fillStyle = "#14532d";
+    ctx.fillRect(80, 285, 380, 120);
+    ctx.strokeStyle = "#78350f";
+    ctx.lineWidth = 6;
+    ctx.strokeRect(80, 285, 380, 120);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 20px sans-serif";
+    ctx.fillText("SINAV BAŞLADI!", 270, 350);
+  } else if (mod === "walk") {
+    // Sokak ve hareket eden arka plan
     ctx.fillStyle = "#bae6fd";
     ctx.fillRect(40, 260, 460, 290);
-    ctx.fillStyle = "#64748b";
+    ctx.fillStyle = "#475569";
     ctx.fillRect(40, 550, 460, 130);
-    // Hareket eden ağaç/bina arka planı
-    const kayma = (frame * 5) % 460;
+    const kayma = (frame * 6) % 460;
     ctx.fillStyle = "#94a3b8";
-    ctx.fillRect(460 - kayma, 350, 70, 200);
+    ctx.fillRect(460 - kayma, 350, 65, 200);
   } else {
+    // Genel oda/sahne
     ctx.fillStyle = "#e8dfd5";
     ctx.fillRect(40, 260, 460, 420);
-    ctx.fillStyle = "#bae6fd";
-    ctx.fillRect(65, 290, 110, 140);
-    ctx.strokeStyle = "#94a3b8";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(65, 290, 110, 140);
-    // Boy Aynası
-    ctx.fillStyle = "#cbd5e1";
-    ctx.fillRect(355, 310, 115, 310);
-    ctx.strokeStyle = "#78350f";
-    ctx.lineWidth = 8;
-    ctx.strokeRect(355, 310, 115, 310);
     ctx.fillStyle = "#d6c7b2";
     ctx.fillRect(40, 610, 460, 70);
   }
 
-  // Bacaklar (Yürüme aksiyonunda adım atar)
-  const adim = aksiyon === "walk" ? dalga * 22 : 0;
-  const zipla = aksiyon === "walk" ? Math.abs(Math.cos(frame * 0.18)) * 6 : 0;
-  const yMerkez = cy - zipla;
+  // Zıplama veya yürüme hareketi
+  if (mod === "jump") cy -= Math.abs(dalga) * 35;
+  if (mod === "walk") cy -= Math.abs(Math.cos(frame * 0.2)) * 8;
+  if (mod === "panic") cx += hizliDalga * 5; // Stresten titreme
 
-  ctx.fillStyle = "#1e293b";
-  ctx.fillRect(cx - 28, yMerkez + 45, 56, 42);
-  ctx.strokeStyle = "#1e293b";
+  // 2. ÇÖP ADAM VÜCUDU VE HAREKETLERİ
+  ctx.strokeStyle = "#0f172a";
   ctx.lineWidth = 7;
   ctx.lineCap = "round";
+
+  // Gövde
   ctx.beginPath();
-  ctx.moveTo(cx - 14, yMerkez + 87);
-  ctx.lineTo(cx - 14 - adim, yMerkez + 145);
-  ctx.moveTo(cx + 14, yMerkez + 87);
-  ctx.lineTo(cx + 14 + adim, yMerkez + 145);
+  ctx.moveTo(cx, cy - 35);
+  ctx.lineTo(cx, cy + 55);
   ctx.stroke();
 
-  // Gövde (Kas sıkma modunda genişler)
-  const genislik = aksiyon === "flex" ? 72 : 62;
-  ctx.fillStyle = "#475569";
+  // Bacaklar
   ctx.beginPath();
-  ctx.roundRect(cx - genislik / 2, yMerkez - 35 - nefes, genislik, 82 + nefes, 14);
+  if (mod === "exam") {
+    // Sırada oturma pozisyonu
+    ctx.moveTo(cx, cy + 55);
+    ctx.lineTo(cx + 45, cy + 55);
+    ctx.lineTo(cx + 45, cy + 125);
+  } else if (mod === "walk") {
+    // Adım atma
+    ctx.moveTo(cx, cy + 55);
+    ctx.lineTo(cx - dalga * 32, cy + 135);
+    ctx.moveTo(cx, cy + 55);
+    ctx.lineTo(cx + dalga * 32, cy + 135);
+  } else if (mod === "jump") {
+    // Havada açık bacaklar
+    ctx.moveTo(cx, cy + 55);
+    ctx.lineTo(cx - 35, cy + 125);
+    ctx.moveTo(cx, cy + 55);
+    ctx.lineTo(cx + 35, cy + 125);
+  } else {
+    ctx.moveTo(cx, cy + 55);
+    ctx.lineTo(cx - 22, cy + 135);
+    ctx.moveTo(cx, cy + 55);
+    ctx.lineTo(cx + 22, cy + 135);
+  }
+  ctx.stroke();
+
+  // Kollar (Her moda özel hareket)
+  ctx.beginPath();
+  if (mod === "exam") {
+    // Masaya uzanıp kalemle yazı yazma + diğer elle kafayı tutma
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx + 55, cy + 25 + hizliDalga * 4);
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx - 42, cy - 65);
+  } else if (mod === "flex") {
+    // Pazu sıkma pozu
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx - 55, cy - 15);
+    ctx.lineTo(cx - 45, cy - 60 - Math.abs(dalga) * 8);
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx + 55, cy - 15);
+    ctx.lineTo(cx + 45, cy - 60 - Math.abs(dalga) * 8);
+  } else if (mod === "panic") {
+    // Elleri panikle havaya/yüze götürme
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx - 45, cy - 75 + hizliDalga * 6);
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx + 45, cy - 75 - hizliDalga * 6);
+  } else if (mod === "jump") {
+    // Sevinçle elleri yukarı sallama
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx - 55, cy - 85 + dalga * 15);
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx + 55, cy - 85 - dalga * 15);
+  } else {
+    // Dinamik konuşma ve el kol hareketleri
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx - 48, cy + 15 + dalga * 25);
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx + 48, cy + 15 - dalga * 25);
+  }
+  ctx.stroke();
+
+  // Sınav moduysa önüne sıra ve sınav kağıdı çiz
+  if (mod === "exam") {
+    ctx.fillStyle = "#92400e";
+    ctx.fillRect(cx + 25, cy + 25, 110, 14);
+    ctx.fillRect(cx + 70, cy + 39, 14, 90);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(cx + 45, cy + 19, 45, 6);
+  }
+
+  // 3. KAFA VE DUYGU İFADELERİ
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(cx, cy - 75, 40, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#0f172a";
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 5;
   ctx.stroke();
 
-  // KOLLAR VE AKSİYON HAREKETLERİ
-  ctx.strokeStyle = "#fed7aa";
-  ctx.lineWidth = aksiyon === "flex" ? 15 : 11;
+  // Gözler ve Kaşlar
+  ctx.lineWidth = 3;
   ctx.beginPath();
-
-  if (aksiyon === "flex") {
-    // İki kolu da yukarı kaldırıp pazu sıkma pozu (Fotoğraftaki gibi!)
-    const sikma = Math.abs(dalga) * 8;
-    // Sol kol
-    ctx.moveTo(cx - 34, yMerkez - 22);
-    ctx.lineTo(cx - 72, yMerkez - 18);
-    ctx.lineTo(cx - 58, yMerkez - 62 - sikma);
-    // Sağ kol
-    ctx.moveTo(cx + 34, yMerkez - 22);
-    ctx.lineTo(cx + 72, yMerkez - 18);
-    ctx.lineTo(cx + 58, yMerkez - 62 - sikma);
+  if (mod === "exam" || mod === "panic") {
+    // Stresli gözler ve ter damlası
+    ctx.arc(cx - 13, cy - 80, 5, 0, Math.PI * 2);
+    ctx.arc(cx + 13, cy - 80, 5, 0, Math.PI * 2);
     ctx.stroke();
-
-    // Sarı enerji/kas parlama çizgileri (Fotoğraftaki sarı efekt!)
-    ctx.strokeStyle = "#facc15";
-    ctx.lineWidth = 4;
+    // Mavi ter damlası
+    ctx.fillStyle = "#38bdf8";
     ctx.beginPath();
-    ctx.arc(cx - 65, yMerkez - 38, 16 + sikma * 0.4, Math.PI * 0.8, Math.PI * 1.5);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(cx + 65, yMerkez - 38, 16 + sikma * 0.4, Math.PI * 1.5, Math.PI * 0.2);
-    ctx.stroke();
-
-  } else if (aksiyon === "celebrate") {
-    // Elleri havaya kaldırma
-    ctx.moveTo(cx - 30, yMerkez - 22);
-    ctx.lineTo(cx - 65, yMerkez - 85 + dalga * 12);
-    ctx.moveTo(cx + 30, yMerkez - 22);
-    ctx.lineTo(cx + 65, yMerkez - 85 - dalga * 12);
-    ctx.stroke();
+    ctx.arc(cx - 48, cy - 85 + Math.abs(dalga) * 15, 6, 0, Math.PI * 2);
+    ctx.fill();
   } else {
-    // Doğal yürüme / konuşma kol sallanması
-    ctx.moveTo(cx - 30, yMerkez - 22);
-    ctx.lineTo(cx - 52 - adim * 0.6, yMerkez + 28);
-    ctx.moveTo(cx + 30, yMerkez - 22);
-    ctx.lineTo(cx + 52 + adim * 0.6, yMerkez + 28);
+    ctx.arc(cx - 13, cy - 80, 4, 0, Math.PI * 2);
+    ctx.arc(cx + 13, cy - 80, 4, 0, Math.PI * 2);
     ctx.stroke();
   }
 
-  // Kafa
-  ctx.fillStyle = "#ffedd5";
-  ctx.beginPath();
-  ctx.arc(cx, yMerkez - 78 - nefes, 42, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#0f172a";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  // Saç tutamı
-  ctx.beginPath();
-  ctx.moveTo(cx - 8, yMerkez - 120 - nefes);
-  ctx.quadraticCurveTo(cx + 5, yMerkez - 135 - nefes, cx + 14, yMerkez - 118 - nefes);
-  ctx.stroke();
-
-  // Kaş ve Gözler
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(cx - 22, yMerkez - 92 - nefes);
-  ctx.lineTo(cx - 8, yMerkez - 87 - nefes);
-  ctx.moveTo(cx + 22, yMerkez - 92 - nefes);
-  ctx.lineTo(cx + 8, yMerkez - 87 - nefes);
-  ctx.moveTo(cx - 20, yMerkez - 80 - nefes);
-  ctx.lineTo(cx - 8, yMerkez - 80 - nefes);
-  ctx.moveTo(cx + 8, yMerkez - 80 - nefes);
-  ctx.lineTo(cx + 20, yMerkez - 80 - nefes);
-  ctx.stroke();
-
-  // Konuşan ağız
-  const agiz = Math.abs(Math.sin(frame * 0.42)) * 8 + 2;
+  // Konuşan Ağız
+  const agiz = Math.abs(Math.sin(frame * 0.45)) * 9 + 2;
   ctx.fillStyle = "#0f172a";
   ctx.beginPath();
-  ctx.ellipse(cx, yMerkez - 60 - nefes, 8, agiz / 2, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, cy - 58, 9, agiz / 2, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -233,8 +256,7 @@ function renderPOVVideo(baslik, hikaye) {
     const stream = c.captureStream(30);
     const rec = new MediaRecorder(stream);
     const chunks = [];
-    const aksiyon = aksiyonAlgila(baslik + " " + hikaye);
-
+    const mod = sahneAnalizEt(baslik + " " + hikaye);
     rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
     rec.onstop = function() {
       const b = new Blob(chunks, { type: "video/webm" });
@@ -252,12 +274,11 @@ function renderPOVVideo(baslik, hikaye) {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, c.width, c.height);
 
-      // Üst Başlık
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 28px 'Segoe UI', Arial, sans-serif";
       ctx.textAlign = "center";
       const baslikKelimeler = baslik.split(" ");
-            let bSatir = "";
+      let bSatir = "";
       let bY = 165;
       for (let i = 0; i < baslikKelimeler.length; i++) {
         const test = bSatir + baslikKelimeler.at(i) + " ";
@@ -271,7 +292,7 @@ function renderPOVVideo(baslik, hikaye) {
       }
       ctx.fillText(bSatir.trim(), c.width / 2, bY);
 
-      sahneVeKarakterCiz(ctx, 235, 480, frame, aksiyon);
+      copAdamSahneCiz(ctx, frame, mod);
 
       const aktifIdx = Math.floor((frame / toplamKare) * kelimeler.length);
       const aktifAltYazi = kelimeler.slice(Math.max(0, aktifIdx - 1), aktifIdx + 2).join(" ");
@@ -298,15 +319,16 @@ function renderPOVVideo(baslik, hikaye) {
 }
 
 async function povOlustur() {
-  const baslik = document.getElementById("videoTitle").value.trim() || "Türk bir vücut geliştirmeci olsaydın (Part 1)";
   const hikaye = document.getElementById("storyText").value.trim();
+  const girilenBaslik = document.getElementById("videoTitle").value.trim();
+  if (!hikaye) { alert("Lütfen hikaye metnini yaz knk!"); return; }
+
+  const baslik = girilenBaslik || hikaye.split(" ").slice(0, 5).join(" ") + " (Part 1)";
   const st = document.getElementById("status");
   const vidEl = document.getElementById("vid");
   const spBtn = document.getElementById("speakBtn");
   const dl = document.getElementById("dl");
   const btn = document.getElementById("btn");
-
-  if (!hikaye) { alert("Lütfen hikaye metnini yaz knk!"); return; }
 
   btn.disabled = true;
   vidEl.style.display = "none";
@@ -314,7 +336,7 @@ async function povOlustur() {
   dl.style.display = "none";
   okunacakMetin = baslik + ". " + hikaye;
 
-  st.innerText = "Vortax AI sahneyi, kas/hareket animasyonunu ve doğal sesi hazırlıyor...";
+  st.innerText = "Vortax AI istediğin sahneyi ve çöp adam hareketlerini oluşturuyor...";
 
   const videoUrl = await renderPOVVideo(baslik, hikaye);
   vidEl.src = videoUrl;
@@ -330,3 +352,5 @@ async function povOlustur() {
 </script>
 </body>
 </html>
+
+  
