@@ -3,18 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vortax AI - Sınırsız Senaryo & Çöp Adam Stüdyosu</title>
+<title>Vortax AI - Gerçekçi POV Video Stüdyosu</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #09090b; color: #fff; display: flex; justify-content: center; padding: 15px; margin: 0; }
   .box { background: #141418; padding: 20px; border-radius: 18px; width: 100%; max-width: 440px; border: 1px solid #27272a; text-align: center; box-shadow: 0 10px 30px rgba(0,230,118,0.12); }
   h1 { color: #00e676; margin: 0 0 4px 0; font-size: 24px; letter-spacing: 1px; }
   .badge { display: inline-block; background: #ef444422; color: #f87171; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 12px; }
   p { color: #a1a1aa; font-size: 13px; margin: 0 0 15px 0; }
-  input, textarea, button { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #27272a; background: #1f1f23; color: #fff; font-size: 14px; box-sizing: border-box; }
+  input, button { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #27272a; background: #1f1f23; color: #fff; font-size: 14px; box-sizing: border-box; }
   button { background: linear-gradient(90deg, #00e676, #00b0ff); color: #000; font-weight: bold; border: none; cursor: pointer; font-size: 15px; }
   button:disabled { background: #3f3f46; color: #888; }
   .voice-btn { background: #ff9100; color: #000; display: none; margin-top: 8px; }
-  .pro-voice { display: none; background: #8b5cf6; color: #fff; text-decoration: none; padding: 11px; border-radius: 10px; font-weight: bold; margin-top: 8px; font-size: 13px; }
   .dl-btn { display: none; background: #2979ff; color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 8px; font-size: 14px; }
   #status { margin-top: 10px; font-size: 13px; color: #ffab00; }
   video { width: 100%; max-width: 270px; aspect-ratio: 9/16; border-radius: 14px; margin: 15px auto 0 auto; display: none; border: 2px solid #27272a; background: #000; }
@@ -25,161 +24,61 @@
 
 <div class="box">
   <h1>VORTAX AI STUDIO</h1>
-  <div class="badge">SEN NE YAPARDIN? • ÇÖP ADAM MOTORU</div>
-  <p>Aklındaki herhangi bir felaket, virüs veya hayatta kalma fikrini yaz!</p>
+  <div class="badge">AI SENARYO • ÇİZİM • TOK SES MOTORU</div>
+  <p>Aklındaki herhangi bir konuyu yaz; yapay zeka 3 sahnelik çizim ve sesli video üretsin!</p>
 
-  <input type="text" id="topicInput" placeholder="Örn: 30 gün sonra zombi istilası başlasa..." />
-  <textarea id="detailInput" rows="3" placeholder="Eklemek istediğin olay (İsteğe bağlı): Örn: Köpek virüsü yayılıyor, dışarı çıkmak yasaklanıyor..."></textarea>
-
-  <button id="btn" type="button" onclick="senaryoOlustur()">🎬 Viral Çöp Adam Videosu Üret</button>
+  <input type="text" id="topic" placeholder="Örn: 30 gün zombi istilası veya köpek virüsü..." />
+  <button id="btn" type="button" onclick="uretimeBasla()">🎬 AI ile Viral Video Üret</button>
 
   <div id="status"></div>
   <canvas id="cvs" width="540" height="960"></canvas>
   <video id="vid" controls autoplay loop playsinline></video>
-  <button id="speakBtn" type="button" class="voice-btn" onclick="hikayeSeslendir()">🔊 Hikaye Sesini Dinle</button>
-  <a id="proVoiceBtn" href="https://ttsmaker.com" target="_blank" class="pro-voice" onclick="metinKopyala()">🎙️ Metni Kopyala & Gerçekçi İnsan Sesi İndir</a>
-  <a id="dl" class="dl-btn" download="vortax-sen-ne-yapardin.webm">⬇️ TikTok / Reels Videosunu İndir</a>
+  <button id="speakBtn" type="button" class="voice-btn" onclick="sesOku()">🔊 Hikaye Sesini Tekrar Dinle</button>
+  <a id="dl" class="dl-btn" download="vortax-ai-video.webm">⬇️ TikTok / Reels Videosunu İndir</a>
 </div>
 
 <script>
-let tamHikayeMetni = "";
-let sesListesi = [];
+const API_URL = "https://workers.dev";
+let tamMetin = "";
+let sesler = [];
 
 if ('speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = function() {
-    sesListesi = window.speechSynthesis.getVoices();
-  };
+  window.speechSynthesis.onvoiceschanged = function() { sesler = window.speechSynthesis.getVoices(); };
 }
 
-function metinKopyala() {
-  if (navigator.clipboard && tamHikayeMetni) {
-    navigator.clipboard.writeText(tamHikayeMetni);
-  }
-}
-
-function hikayeSeslendir() {
-  if (!tamHikayeMetni || !('speechSynthesis' in window)) return;
+function sesOku() {
+  if (!tamMetin || !('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
-  if (sesListesi.length === 0) sesListesi = window.speechSynthesis.getVoices();
-
-  const u = new SpeechSynthesisUtterance(tamHikayeMetni);
+  if (sesler.length === 0) sesler = window.speechSynthesis.getVoices();
+  const u = new SpeechSynthesisUtterance(tamMetin);
   u.lang = "tr-TR";
-  const trSesler = sesListesi.filter(function(v) { return v.lang.toLowerCase().includes("tr"); });
-  if (trSesler.length > 0) {
-    const iyiSes = trSesler.find(function(v) { return v.name.toLowerCase().includes("google") || v.name.toLowerCase().includes("natural"); });
-    u.voice = iyiSes || trSesler.at(0);
+  const tr = sesler.filter(function(v) { return v.lang.toLowerCase().includes("tr"); });
+  if (tr.length > 0) {
+    const iyi = tr.find(function(v) { return v.name.toLowerCase().includes("google") || v.name.toLowerCase().includes("natural"); });
+    u.voice = iyi || tr.at(0);
   }
-  // TikTok gerilim anlatıcısı gibi tok, derin ve akıcı ses tonu
-  u.rate = 0.93;
-  u.pitch = 0.78;
+  u.rate = 0.94;
+  u.pitch = 0.80;
   window.speechSynthesis.speak(u);
 }
 
-function temaBelirle(metin) {
-  const m = metin.toLowerCase();
-  if (m.includes("kırmızı") || m.includes("yağmur") || m.includes("kan")) return "red_rain";
-  if (m.includes("zombi") || m.includes("virüs") || m.includes("köpek") || m.includes("salgın") || m.includes("hastalık")) return "virus";
-  if (m.includes("uzay") || m.includes("meteor") || m.includes("güneş") || m.includes("karanlık")) return "apocalypse";
-  return "survival";
+function resimYukle(komut) {
+  return new Promise(function(resolve) {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    const timeout = setTimeout(function() { resolve(null); }, 15000);
+    img.onload = function() { clearTimeout(timeout); resolve(img); };
+    img.onerror = function() { clearTimeout(timeout); resolve(null); };
+    img.src = API_URL + "/img?p=" + encodeURIComponent(komut);
+  });
 }
-
-function sahneCiz(ctx, frame, toplamKare, tema, gunEtiketi) {
-  const dalga = Math.sin(frame * 0.25);
-  const titreme = Math.sin(frame * 0.6) * 3;
-  const cx = 270 + titreme;
-  const cy = 485;
-
-  // 1. Ortam Atmosferi (Konuya göre otomatik renklenir)
-  const sky = ctx.createLinearGradient(0, 250, 0, 680);
-  if (tema === "red_rain") {
-    sky.addColorStop(0, "#450a0a");
-    sky.addColorStop(1, "#18181b");
-  } else if (tema === "virus") {
-    sky.addColorStop(0, "#064e3b");
-    sky.addColorStop(1, "#09090b");
-  } else {
-    sky.addColorStop(0, "#1e293b");
-    sky.addColorStop(1, "#09090b");
-  }
-  ctx.fillStyle = sky;
-  ctx.fillRect(40, 250, 460, 430);
-
-  // Zemin
-  ctx.fillStyle = "#18181b";
-  ctx.fillRect(40, 610, 460, 70);
-
-  // Sol üstte Gün / Aşama Sayacı (TikTok videolarındaki gibi)
-  ctx.fillStyle = "rgba(0,0,0,0.65)";
-  ctx.fillRect(55, 265, 130, 36);
-  ctx.fillStyle = tema === "virus" ? "#4ade80" : "#f87171";
-  ctx.font = "bold 18px sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText(gunEtiketi, 70, 289);
-  ctx.textAlign = "center";
-
-  // Yağmur veya Virüs Parçacıkları
-  ctx.fillStyle = tema === "red_rain" ? "#ef4444" : (tema === "virus" ? "#22c55e" : "#94a3b8");
-  for (let i = 0; i < 28; i++) {
-    const px = 50 + ((i * 73 + frame * 3) % 440);
-    const py = 260 + ((i * 97 + frame * 9) % 350);
-    ctx.fillRect(px, py, 3, tema === "red_rain" ? 14 : 5);
-  }
-
-  // 2. ÇÖP ADAM (Koşma, Panik ve Hayatta Kalma Animasyonu)
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 7;
-  ctx.lineCap = "round";
-
-  // Gövde
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - 35);
-  ctx.lineTo(cx, cy + 55);
-  ctx.stroke();
-
-  // Koşan / Hareket Eden Bacaklar
-  ctx.beginPath();
-  ctx.moveTo(cx, cy + 55);
-  ctx.lineTo(cx - dalga * 34, cy + 125);
-  ctx.moveTo(cx, cy + 55);
-  ctx.lineTo(cx + dalga * 34, cy + 125);
-  ctx.stroke();
-
-  // Panikle Kalkan Kollar
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - 20);
-  ctx.lineTo(cx - 48, cy - 55 + dalga * 15);
-  ctx.moveTo(cx, cy - 20);
-  ctx.lineTo(cx + 48, cy - 55 - dalga * 15);
-  ctx.stroke();
-
-  // Kafa
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.arc(cx, cy - 75, 38, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Şaşkın / Korkmuş Gözler
-  ctx.fillStyle = "#09090b";
-  ctx.beginPath();
-  ctx.arc(cx - 12, cy - 80, 5, 0, Math.PI * 2);
-  ctx.arc(cx + 12, cy - 80, 5, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Konuşan / Bağıran Ağız
-  const agiz = Math.abs(Math.sin(frame * 0.45)) * 11 + 3;
-  ctx.beginPath();
-  ctx.ellipse(cx, cy - 58, 9, agiz / 2, 0, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function videoOlustur(baslik, hikayeler) {
+  function videoBirlesikRender(baslik, sahneler) {
   return new Promise(function(resolve) {
     const c = document.getElementById("cvs");
     const ctx = c.getContext("2d");
     const stream = c.captureStream(30);
     const rec = new MediaRecorder(stream);
     const chunks = [];
-    const tema = temaBelirle(baslik + " " + hikayeler.join(" "));
 
     rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
     rec.onstop = function() {
@@ -189,9 +88,7 @@ function videoOlustur(baslik, hikayeler) {
 
     rec.start();
     let frame = 0;
-    const toplamKare = 240; // 8 saniyelik 3 aşamalı video
-    const tamMetin = hikayeler.join(" ").toUpperCase();
-    const kelimeler = tamMetin.split(" ");
+    const toplamKare = 270;
 
     function ciz() {
       if (frame >= toplamKare) { rec.stop(); return; }
@@ -199,51 +96,47 @@ function videoOlustur(baslik, hikayeler) {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, c.width, c.height);
 
-      // Üst Başlık
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 28px 'Segoe UI', Arial, sans-serif";
       ctx.textAlign = "center";
-      const bKelimeler = baslik.split(" ");
-      let bSatir = "";
-      let bY = 155;
-      for (let i = 0; i < bKelimeler.length; i++) {
-        const test = bSatir + bKelimeler.at(i) + " ";
-        if (ctx.measureText(test).width > 440 && i > 0) {
-          ctx.fillText(bSatir.trim(), c.width / 2, bY);
-          bSatir = bKelimeler.at(i) + " ";
-          bY += 36;
-        } else {
-          bSatir = test;
-        }
+      ctx.fillText(baslik, c.width / 2, 165, 460);
+
+      const sahneIdx = Math.min(2, Math.floor(frame / 90));
+      const aktifSahne = sahneler.at(sahneIdx);
+      const lokalFrame = frame % 90;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(40, 240, 460, 440);
+      ctx.clip();
+
+      if (aktifSahne.img) {
+        const zoom = 1.0 + (lokalFrame / 90) * 0.14;
+        const w = 460 * zoom;
+        const h = 440 * zoom;
+        ctx.drawImage(aktifSahne.img, 40 - (w - 460) / 2, 240 - (h - 440) / 2, w, h);
+      } else {
+        ctx.fillStyle = "#1f2937";
+        ctx.fillRect(40, 240, 460, 440);
       }
-      ctx.fillText(bSatir.trim(), c.width / 2, bY);
+      ctx.restore();
 
-      // Aşama Etiketi (Bölüm 1 -> Bölüm 2 -> Bölüm 3)
-      let asama = "AŞAMA 1: BAŞLANGIÇ";
-      if (frame > 80) asama = "AŞAMA 2: KAOS";
-      if (frame > 160) asama = "AŞAMA 3: SON KARAR";
+      const kelimeler = aktifSahne.text.toUpperCase().split(" ");
+      const kIdx = Math.floor((lokalFrame / 90) * kelimeler.length);
+      const altYazi = kelimeler.slice(Math.max(0, kIdx - 1), kIdx + 2).join(" ");
 
-      sahneCiz(ctx, frame, toplamKare, tema, asama);
-
-      // Kalın Siyah Çerçeveli Beyaz Alt Yazı
-      const idx = Math.floor((frame / toplamKare) * kelimeler.length);
-      const altYazi = kelimeler.slice(Math.max(0, idx - 1), idx + 2).join(" ");
       ctx.font = "900 30px Arial, sans-serif";
       ctx.strokeStyle = "#000000";
       ctx.lineWidth = 7;
-      ctx.strokeText(altYazi, c.width / 2, 650);
+      ctx.strokeText(altYazi, c.width / 2, 645);
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(altYazi, c.width / 2, 650);
+      ctx.fillText(altYazi, c.width / 2, 645);
 
-      // Alt Kapanış Sorusu (TikTok tarzı)
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 23px 'Segoe UI', Arial, sans-serif";
-      ctx.fillText("Peki böyle bir durumda", c.width / 2, 780);
-      ctx.fillStyle = "#facc15";
-      ctx.fillText("SEN NE YAPARDIN?", c.width / 2, 815);
-      ctx.fillStyle = "#a1a1aa";
-      ctx.font = "18px sans-serif";
-      ctx.fillText("Yorumlara yaz, Part 2 gelsin!", c.width / 2, 850);
+      ctx.font = "bold 21px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText("Yeni partlar ve seriler için", c.width / 2, 775);
+      ctx.fillText("takip etmeyi görüşlerinizi", c.width / 2, 805);
+      ctx.fillText("yorumlara yazmayı unutmayın", c.width / 2, 835);
 
       frame++;
       requestAnimationFrame(ciz);
@@ -252,43 +145,57 @@ function videoOlustur(baslik, hikayeler) {
   });
 }
 
-async function senaryoOlustur() {
-  const konu = document.getElementById("topicInput").value.trim();
-    const detay = document.getElementById("detailInput").value.trim();
-  if (!konu) { alert("Lütfen bir senaryo konusu yaz knk!"); return; }
+async function uretimeBasla() {
+  const konu = document.getElementById("topic").value.trim();
+  if (!konu) { alert("Lütfen bir konu yaz knk!"); return; }
 
   const st = document.getElementById("status");
   const vidEl = document.getElementById("vid");
   const spBtn = document.getElementById("speakBtn");
-  const proBtn = document.getElementById("proVoiceBtn");
   const dl = document.getElementById("dl");
   const btn = document.getElementById("btn");
 
   btn.disabled = true;
   vidEl.style.display = "none";
   spBtn.style.display = "none";
-  proBtn.style.display = "none";
   dl.style.display = "none";
 
-  const bolum1 = "İlk gün herkes bunu sıradan bir olay sandı: " + konu + ".";
-  const bolum2 = detay ? detay : "Kısa sürede sokaklar karıştı ve kimse dışarı çıkamaz oldu.";
-  const bolum3 = "Artık geri dönüş yok. Hayatta kalmak için tek bir şansın var. Sen ne yapardın?";
+  try {
+    st.innerText = "1/3: Gemini AI senaryoyu yazıyor...";
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic: konu })
+    });
+    const senaryo = await res.json();
+    if (senaryo.error) throw new Error(senaryo.error);
 
-  tamHikayeMetni = konu + ". " + bolum1 + " " + bolum2 + " " + bolum3;
+    st.innerText = "2/3: Yapay zeka 3 farklı sahne çizimini üretiyor (15-20 sn)...";
+    const img1 = await resimYukle(senaryo.s1_img);
+    const img2 = await resimYukle(senaryo.s2_img);
+    const img3 = await resimYukle(senaryo.s3_img);
 
-  st.innerText = "Vortax AI senaryoyu kurguluyor ve çöp adam videosunu üretiyor...";
+    st.innerText = "3/3: Sahneler, alt yazılar ve ses birleştiriliyor...";
+    tamMetin = senaryo.title + ". " + senaryo.s1_text + " " + senaryo.s2_text + " " + senaryo.s3_text;
 
-  const vUrl = await videoOlustur(konu, [bolum1, bolum2, bolum3]);
-  vidEl.src = vUrl;
-  vidEl.style.display = "block";
-  spBtn.style.display = "block";
-  proBtn.style.display = "block";
-  dl.href = vUrl;
-  dl.style.display = "block";
-  st.innerText = "Video hazır! Tok anlatıcı sesini dinleyebilir veya videoyu indirebilirsin.";
+    const vUrl = await videoBirlesikRender(senaryo.title, [
+      { text: senaryo.s1_text, img: img1 },
+      { text: senaryo.s2_text, img: img2 },
+      { text: senaryo.s3_text, img: img3 }
+    ]);
 
-  hikayeSeslendir();
-  btn.disabled = false;
+    vidEl.src = vUrl;
+    vidEl.style.display = "block";
+    spBtn.style.display = "block";
+    dl.href = vUrl;
+    dl.style.display = "block";
+    st.innerText = "AI Videon hazır! Oynatabilir, sesini dinleyebilir veya indirebilirsin.";
+    sesOku();
+  } catch (e) {
+    st.innerText = "Durum: " + e.message;
+  } finally {
+    btn.disabled = false;
+  }
 }
 </script>
 </body>
