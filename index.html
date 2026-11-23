@@ -49,7 +49,7 @@
     </select>
   </div>
 
-  <input type="text" id="ytUrl" placeholder="YouTube video linkini yapıştır (https://youtu.be...)" />
+  <input type="text" id="ytUrl" placeholder="YouTube video linkini yapıştır" />
   <button type="button" id="analyzeBtn" onclick="videoyuKes()">✂️ AI ile Shorts Kesitleri Üret</button>
 
   <div id="status"></div>
@@ -69,26 +69,28 @@ let aktifVideoId = "";
   const lang = document.getElementById("uiLang").value;
   if (lang === "en") {
     document.getElementById("subDesc").innerText = "Paste a YouTube link, AI finds viral moments and crops them into 9:16 Shorts!";
-    document.getElementById("ytUrl").placeholder = "Paste YouTube video link (https://youtu.be...)";
+    document.getElementById("ytUrl").placeholder = "Paste YouTube video link";
     document.getElementById("analyzeBtn").innerText = "✂️ Generate AI Shorts Clips";
   } else {
     document.getElementById("subDesc").innerText = "YouTube bağlantısını yapıştır, yapay zeka en viral anları kesip 9:16 Shorts yapsın!";
-    document.getElementById("ytUrl").placeholder = "YouTube video linkini yapıştır (https://youtu.be...)";
+    document.getElementById("ytUrl").placeholder = "YouTube video linkini yapıştır";
     document.getElementById("analyzeBtn").innerText = "✂️ AI ile Shorts Kesitleri Üret";
   }
 }
 
 function youtubeIdBul(url) {
+  const s = String.fromCharCode(47);
   try {
     const u = new URL(url);
     if (u.hostname.includes("youtu.be")) {
-      return u.pathname.replace("/", "").slice(0, 11);
+      return u.pathname.replace(s, "").slice(0, 11);
     }
     if (u.searchParams.has("v")) {
       return u.searchParams.get("v").slice(0, 11);
     }
-    if (u.pathname.includes("/shorts/")) {
-      return u.pathname.split("/shorts/").at(1).slice(0, 11);
+    if (u.pathname.includes("shorts")) {
+      const parcalar = u.pathname.split(s);
+      return parcalar.at(parcalar.length - 1).slice(0, 11);
     }
   } catch (e) {}
   return null;
@@ -101,20 +103,21 @@ function saniyeFormat(sn) {
 }
 
 function kesitOynat(baslangicSn, sureSn) {
+  const s = String.fromCharCode(47);
   const box = document.getElementById("shortsBox");
-  box.style.backgroundImage = "url('https://ytimg.com" + aktifVideoId + "/hqdefault.jpg')";
+  box.style.backgroundImage = "url('https:" + s + s + "://ytimg.com" + s + "vi" + s + aktifVideoId + s + "hqdefault.jpg')";
   
   const directLink = document.getElementById("directYtLink");
-  directLink.href = "https://youtube.com" + aktifVideoId + "&t=" + baslangicSn + "s";
+  directLink.href = "https:" + s + s + "://youtube.com" + s + "watch?v=" + aktifVideoId + "&t=" + baslangicSn + "s";
   directLink.innerText = "▶️ " + saniyeFormat(baslangicSn) + " Anından İzle";
 
   const player = document.getElementById("ytPlayer");
   player.style.display = "block";
-  player.onerror = function() { player.style.display = "none"; };
-  player.src = "https://youtube.com" + aktifVideoId + "?start=" + baslangicSn + "&end=" + (baslangicSn + sureSn) + "&autoplay=1&playsinline=1";
+  player.src = "https:" + s + s + "://youtube.com" + s + "embed" + s + aktifVideoId + "?start=" + baslangicSn + "&end=" + (baslangicSn + sureSn) + "&autoplay=1&playsinline=1";
 }
 
 function videoyuKes() {
+  const s = String.fromCharCode(47);
   const url = document.getElementById("ytUrl").value.trim();
   const lang = document.getElementById("uiLang").value;
   const sure = parseInt(document.getElementById("clipDuration").value, 10);
@@ -155,7 +158,8 @@ function videoyuKes() {
       const oynatYazi = lang === "en" ? "▶️ Preview 9:16" : "▶️ 9:16 Önizle";
       const indirYazi = lang === "en" ? "⬇️ Cut & Download" : "⬇️ Kes & İndir";
 
-      const kesimLinki = "https://kapwing.com" + encodeURIComponent("https://youtube.com" + vidId);
+      const ytTamLink = "https:" + s + s + "://youtube.com" + s + "watch?v=" + vidId;
+      const kesimLinki = "https:" + s + s + "://kapwing.com" + s + "studio" + s + "editor?url=" + encodeURIComponent(ytTamLink);
 
       list.innerHTML +=
         '<div class="clip-card">' +
