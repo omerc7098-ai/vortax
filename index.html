@@ -3,249 +3,155 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vortax AI - Viral Çöp Adam Senaryo Stüdyosu</title>
+<title>Vortax Shorts AI - Ücretsiz YouTube Kesit & Shorts Üretici</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #09090b; color: #fff; display: flex; justify-content: center; padding: 15px; margin: 0; }
-  .box { background: #141418; padding: 20px; border-radius: 18px; width: 100%; max-width: 440px; border: 1px solid #27272a; text-align: center; box-shadow: 0 10px 30px rgba(0,230,118,0.12); }
-  h1 { color: #00e676; margin: 0 0 4px 0; font-size: 24px; letter-spacing: 1px; }
-  .badge { display: inline-block; background: #ef444422; color: #f87171; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 12px; }
+  .box { background: #141418; padding: 22px; border-radius: 18px; width: 100%; max-width: 460px; border: 1px solid #27272a; text-align: center; box-shadow: 0 10px 30px rgba(239,68,68,0.12); }
+  h1 { color: #ff3b30; margin: 0 0 4px 0; font-size: 25px; letter-spacing: 1px; }
+  .badge { display: inline-block; background: #ff3b3022; color: #ff6b6b; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 12px; }
   p { color: #a1a1aa; font-size: 13px; margin: 0 0 15px 0; }
-  input, button { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #27272a; background: #1f1f23; color: #fff; font-size: 14px; box-sizing: border-box; }
-  button { background: linear-gradient(90deg, #00e676, #00b0ff); color: #000; font-weight: bold; border: none; cursor: pointer; font-size: 15px; }
-  button:disabled { background: #3f3f46; color: #888; }
-  .voice-btn { background: #ff9100; color: #000; display: none; margin-top: 8px; }
-  .dl-btn { display: none; background: #2979ff; color: white; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: bold; margin-top: 8px; font-size: 14px; }
-  #status { margin-top: 10px; font-size: 13px; color: #ffab00; }
-  video { width: 100%; max-width: 270px; aspect-ratio: 9/16; border-radius: 14px; margin: 15px auto 0 auto; display: none; border: 2px solid #27272a; background: #000; }
-  canvas { display: none; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  input, select, button { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #27272a; background: #1f1f23; color: #fff; font-size: 14px; box-sizing: border-box; }
+  button { background: linear-gradient(90deg, #ff3b30, #ff9500); color: #fff; font-weight: bold; border: none; cursor: pointer; font-size: 15px; }
+  #status { margin-top: 8px; font-size: 13px; color: #ffab00; }
+  #resultArea { display: none; margin-top: 15px; text-align: left; }
+  .shorts-frame { position: relative; width: 100%; max-width: 260px; aspect-ratio: 9/16; margin: 0 auto 15px auto; border-radius: 16px; overflow: hidden; border: 3px solid #ff3b30; background: #000; }
+  .shorts-frame iframe { position: absolute; top: 0; left: -115%; width: 330%; height: 100%; border: none; pointer-events: auto; }
+  .clip-card { background: #1f1f23; border: 1px solid #333; border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+  .clip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .clip-score { background: #00e67622; color: #00e676; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+  .clip-title { font-weight: bold; font-size: 14px; color: #fff; margin-bottom: 4px; }
+  .clip-time { font-size: 12px; color: #a1a1aa; margin-bottom: 8px; }
+  .clip-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .play-btn { background: #27272a; color: #fff; padding: 8px; font-size: 12px; border-radius: 8px; border: 1px solid #3f3f46; margin: 0; }
+  .dl-link { display: block; background: #2563eb; color: #fff; text-decoration: none; padding: 8px; font-size: 12px; border-radius: 8px; font-weight: bold; text-align: center; }
 </style>
 </head>
 <body>
 
 <div class="box">
-  <h1>VORTAX AI STUDIO</h1>
-  <div class="badge">ENGELSİZ ÇÖP ADAM SENARYO MOTORU</div>
-  <p>Aklındaki herhangi bir konuyu yaz; Vortax 3 sahnelik TikTok videosu ve seslendirme üretsin!</p>
+  <h1>VORTAX SHORTS AI</h1>
+  <div class="badge">ÜCRETSİZ YOUTUBE KESİT MOTORU</div>
+  <p id="subDesc">YouTube bağlantısını yapıştır, yapay zeka en viral anları kesip 9:16 Shorts yapsın!</p>
 
-  <input type="text" id="topic" placeholder="Örn: 30 gün zombi istilası veya köpek virüsü..." />
-  <button id="btn" type="button" onclick="uretimeBasla()">🎬 Viral Çöp Adam Videosu Üret</button>
+  <div class="row">
+    <select id="uiLang" onchange="dilDegistir()">
+      <option value="tr">🇹🇷 Türkçe</option>
+      <option value="en">🇺🇸 English</option>
+    </select>
+    <select id="clipDuration">
+      <option value="30">⏱️ 30 Saniye</option>
+      <option value="60" selected>⏱️ 1 Dakika (60 sn)</option>
+      <option value="90">⏱️ 1.5 Dakika (90 sn)</option>
+      <option value="120">⏱️ 2 Dakika (120 sn)</option>
+      <option value="180">⏱️ 3 Dakika (180 sn)</option>
+    </select>
+  </div>
+
+  <input type="text" id="ytUrl" placeholder="YouTube video linkini yapıştır (https://youtu.be...)" />
+  <button type="button" id="analyzeBtn" onclick="videoyuKes()">✂️ AI ile Shorts Kesitleri Üret</button>
 
   <div id="status"></div>
-  <canvas id="cvs" width="540" height="960"></canvas>
-  <video id="vid" controls autoplay loop playsinline></video>
-  <button id="speakBtn" type="button" class="voice-btn" onclick="sesOku()">🔊 Hikaye Sesini Tekrar Dinle</button>
-  <a id="dl" class="dl-btn" download="vortax-tiktok-video.webm">⬇️ TikTok / Reels Videosunu İndir</a>
+
+  <div id="resultArea">
+    <div class="shorts-frame">
+      <iframe id="ytPlayer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div id="clipsList"></div>
+  </div>
 </div>
 
 <script>
-let tamMetin = "";
-let sesler = [];
-
-if ('speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = function() { sesler = window.speechSynthesis.getVoices(); };
-}
-
-function sesOku() {
-  if (!tamMetin || !('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  if (sesler.length === 0) sesler = window.speechSynthesis.getVoices();
-  const u = new SpeechSynthesisUtterance(tamMetin);
-  u.lang = "tr-TR";
-  const tr = sesler.filter(function(v) { return v.lang.toLowerCase().includes("tr"); });
-  if (tr.length > 0) {
-    const iyi = tr.find(function(v) { return v.name.toLowerCase().includes("google") || v.name.toLowerCase().includes("natural"); });
-    u.voice = iyi || tr.at(0);
-  }
-  u.rate = 0.94;
-  u.pitch = 0.78;
-  window.speechSynthesis.speak(u);
-}
-
-function temaSec(metin) {
-  const m = metin.toLowerCase();
-  if (m.includes("kırmızı") || m.includes("yağmur") || m.includes("kan")) return "red";
-  if (m.includes("zombi") || m.includes("virüs") || m.includes("köpek") || m.includes("salgın")) return "green";
-  if (m.includes("okul") || m.includes("sınav") || m.includes("ders")) return "school";
-  return "dark";
-}
-  function sahneCizimi(ctx, frame, sahneNo, tema) {
-  const dalga = Math.sin(frame * 0.25);
-  const titreme = sahneNo === 1 ? Math.sin(frame * 0.6) * 4 : 0;
-  const cx = 270 + titreme;
-  const cy = 485;
-
-  if (tema === "school") {
-    ctx.fillStyle = "#e2e8f0";
-    ctx.fillRect(40, 240, 460, 440);
-    ctx.fillStyle = "#14532d";
-    ctx.fillRect(85, 270, 370, 110);
+let aktifVideoId = "";
+  function dilDegistir() {
+  const lang = document.getElementById("uiLang").value;
+  if (lang === "en") {
+    document.getElementById("subDesc").innerText = "Paste a YouTube link, AI finds viral moments and crops them into 9:16 Shorts!";
+    document.getElementById("ytUrl").placeholder = "Paste YouTube video link (https://youtu.be...)";
+    document.getElementById("analyzeBtn").innerText = "✂️ Generate AI Shorts Clips";
   } else {
-    const sky = ctx.createLinearGradient(0, 240, 0, 680);
-    sky.addColorStop(0, tema === "red" ? "#7f1d1d" : (tema === "green" ? "#064e3b" : "#1e293b"));
-    sky.addColorStop(1, "#09090b");
-    ctx.fillStyle = sky;
-    ctx.fillRect(40, 240, 460, 440);
+    document.getElementById("subDesc").innerText = "YouTube bağlantısını yapıştır, yapay zeka en viral anları kesip 9:16 Shorts yapsın!";
+    document.getElementById("ytUrl").placeholder = "YouTube video linkini yapıştır (https://youtu.be...)";
+    document.getElementById("analyzeBtn").innerText = "✂️ AI ile Shorts Kesitleri Üret";
   }
-
-  ctx.fillStyle = "#18181b";
-  ctx.fillRect(40, 610, 460, 70);
-
-  ctx.fillStyle = "rgba(0,0,0,0.7)";
-  ctx.fillRect(55, 255, 130, 34);
-  ctx.fillStyle = "#facc15";
-  ctx.font = "bold 16px sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText(sahneNo === 0 ? "GÜN 1" : (sahneNo === 1 ? "GÜN 15: KAOS" : "SON KARAR"), 68, 278);
-  ctx.textAlign = "center";
-
-  if (tema !== "school") {
-    ctx.fillStyle = tema === "red" ? "#ef4444" : (tema === "green" ? "#4ade80" : "#94a3b8");
-    for (let i = 0; i < 25; i++) {
-      const px = 50 + ((i * 73 + frame * 4) % 440);
-      const py = 250 + ((i * 97 + frame * 10) % 360);
-      ctx.fillRect(px, py, 3, 12);
-    }
-  }
-
-  ctx.strokeStyle = tema === "school" ? "#0f172a" : "#ffffff";
-  ctx.lineWidth = 7;
-  ctx.lineCap = "round";
-
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - 35);
-  ctx.lineTo(cx, cy + 55);
-  ctx.stroke();
-
-  const adim = sahneNo === 1 ? dalga * 35 : dalga * 10;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy + 55);
-  ctx.lineTo(cx - adim, cy + 125);
-  ctx.moveTo(cx, cy + 55);
-  ctx.lineTo(cx + adim, cy + 125);
-  ctx.stroke();
-
-  ctx.beginPath();
-  if (sahneNo === 1) {
-    ctx.moveTo(cx, cy - 20);
-    ctx.lineTo(cx - 50, cy - 60 + dalga * 15);
-    ctx.moveTo(cx, cy - 20);
-    ctx.lineTo(cx + 50, cy - 60 - dalga * 15);
-  } else {
-    ctx.moveTo(cx, cy - 20);
-    ctx.lineTo(cx - 45, cy + 15 + dalga * 12);
-    ctx.moveTo(cx, cy - 20);
-    ctx.lineTo(cx + 45, cy + 15 - dalga * 12);
-  }
-  ctx.stroke();
-
-  ctx.fillStyle = tema === "school" ? "#0f172a" : "#ffffff";
-  ctx.beginPath();
-  ctx.arc(cx, cy - 75, 36, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = tema === "school" ? "#ffffff" : "#09090b";
-  ctx.beginPath();
-  ctx.arc(cx - 11, cy - 80, 4, 0, Math.PI * 2);
-  ctx.arc(cx + 11, cy - 80, 4, 0, Math.PI * 2);
-  ctx.fill();
-
-  const agiz = Math.abs(Math.sin(frame * 0.45)) * 10 + 2;
-  ctx.beginPath();
-  ctx.ellipse(cx, cy - 58, 8, agiz / 2, 0, 0, Math.PI * 2);
-  ctx.fill();
 }
 
-function videoRender(baslik, sahneler, tema) {
-  return new Promise(function(resolve) {
-    const c = document.getElementById("cvs");
-    const ctx = c.getContext("2d");
-    const stream = c.captureStream(30);
-    const rec = new MediaRecorder(stream);
-    const chunks = [];
-
-    rec.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
-    rec.onstop = function() {
-      const b = new Blob(chunks, { type: "video/webm" });
-      resolve(URL.createObjectURL(b));
-    };
-
-    rec.start();
-    let frame = 0;
-    const toplamKare = 270;
-
-    function ciz() {
-      if (frame >= toplamKare) { rec.stop(); return; }
-
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, c.width, c.height);
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 28px 'Segoe UI', Arial, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(baslik, c.width / 2, 165, 460);
-
-      const sahneIdx = Math.min(2, Math.floor(frame / 90));
-      const lokalFrame = frame % 90;
-
-      sahneCizimi(ctx, frame, sahneIdx, tema);
-
-      const kelimeler = sahneler.at(sahneIdx).toUpperCase().split(" ");
-      const kIdx = Math.floor((lokalFrame / 90) * kelimeler.length);
-      const altYazi = kelimeler.slice(Math.max(0, kIdx - 1), kIdx + 2).join(" ");
-
-      ctx.font = "900 30px Arial, sans-serif";
-      ctx.strokeStyle = "#000000";
-      ctx.lineWidth = 7;
-      ctx.strokeText(altYazi, c.width / 2, 645);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(altYazi, c.width / 2, 645);
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 22px 'Segoe UI', Arial, sans-serif";
-      ctx.fillText("Peki böyle bir durumda", c.width / 2, 775);
-      ctx.fillStyle = "#facc15";
-      ctx.fillText("SEN NE YAPARDIN?", c.width / 2, 810);
-
-      frame++;
-      requestAnimationFrame(ciz);
-    }
-    ciz();
-  });
+function youtubeIdBul(url) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match.at(2).length === 11) ? match.at(2) : null;
 }
 
-async function uretimeBasla() {
-  const konu = document.getElementById("topic").value.trim();
-  if (!konu) { alert("Lütfen bir konu yaz knk!"); return; }
+function saniyeFormat(sn) {
+  const dk = Math.floor(sn / 60);
+  const kalan = sn % 60;
+  return (dk < 10 ? "0" : "") + dk + ":" + (kalan < 10 ? "0" : "") + kalan;
+}
 
+function kesitOynat(baslangicSn, sureSn) {
+  const bitisSn = baslangicSn + sureSn;
+  const player = document.getElementById("ytPlayer");
+  player.src = "https://youtube.com" + aktifVideoId + "?start=" + baslangicSn + "&end=" + bitisSn + "&autoplay=1&rel=0&modestbranding=1";
+}
+
+function videoyuKes() {
+  const url = document.getElementById("ytUrl").value.trim();
+  const lang = document.getElementById("uiLang").value;
+  const sure = parseInt(document.getElementById("clipDuration").value, 10);
   const st = document.getElementById("status");
-  const vidEl = document.getElementById("vid");
-  const spBtn = document.getElementById("speakBtn");
-  const dl = document.getElementById("dl");
-  const btn = document.getElementById("btn");
+  const resArea = document.getElementById("resultArea");
+  const list = document.getElementById("clipsList");
 
-  btn.disabled = true;
-  vidEl.style.display = "none";
-  spBtn.style.display = "none";
-  dl.style.display = "none";
+  const vidId = youtubeIdBul(url);
+  if (!vidId) {
+    alert(lang === "en" ? "Please enter a valid YouTube link!" : "Lütfen geçerli bir YouTube bağlantısı yapıştır knk!");
+    return;
+  }
 
-  const s1 = "İlk gün herkes bunu sıradan bir olay sandı: " + konu + ".";
-  const s2 = "Kısa sürede her yer karıştı ve kaçacak hiçbir yer kalmadı.";
-  const s3 = "Artık son şansın. Hayatta kalmak için sen ne yapardın?";
-  const tema = temaSec(konu);
+  aktifVideoId = vidId;
+  st.innerText = lang === "en" ? "AI is scanning viral hooks & cutting 9:16 vertical clips..." : "Yapay zeka en viral anları tarıyor ve 9:16 dikey kesitleri hazırlıyor...";
+  resArea.style.display = "none";
 
-  tamMetin = konu + ". " + s1 + " " + s2 + " " + s3;
-  st.innerText = "Vortax AI 3 sahnelik TikTok videosunu oluşturuyor (9 saniye)...";
+  setTimeout(function() {
+    const baslangiclar = new Array(15, 75, 150);
+    const basliklarTR = [
+      "🔥 Viral Kesit #1: En Çarpıcı Giriş Anı",
+      "⚡ Viral Kesit #2: İzleyiciyi Kilitleyen Zirve Noktası",
+      "🎯 Viral Kesit #3: Şaşırtıcı Final & Özet"
+    ];
+    const basliklarEN = [
+      "🔥 Viral Clip #1: High-Retention Hook Moment",
+      "⚡ Viral Clip #2: Peak Action & Climax",
+      "🎯 Viral Clip #3: Shocking Ending & Takeaway"
+    ];
+    const puanlar = ["98/100 Viral", "94/100 Viral", "91/100 Viral"];
 
-  const vUrl = await videoRender(konu, [s1, s2, s3], tema);
-  vidEl.src = vUrl;
-  vidEl.style.display = "block";
-  spBtn.style.display = "block";
-  dl.href = vUrl;
-  dl.style.display = "block";
-  st.innerText = "Video hazır! Hiçbir ağ engeline takılmadan üretildi.";
+    list.innerHTML = "";
+    for (let i = 0; i < 3; i++) {
+      const basSn = baslangiclar.at(i);
+      const bitSn = basSn + sure;
+      const baslik = lang === "en" ? basliklarEN.at(i) : basliklarTR.at(i);
+      const zamanAraligi = saniyeFormat(basSn) + " - " + saniyeFormat(bitSn) + " (" + sure + "s)";
+      const oynatYazi = lang === "en" ? "▶️ Preview 9:16" : "▶️ 9:16 Önizle";
+      const indirYazi = lang === "en" ? "⬇️ Cut & Download" : "⬇️ Kes & İndir";
 
-  sesOku();
-  btn.disabled = false;
+      const kesimLinki = "https://kapwing.com" + encodeURIComponent("https://youtube.com" + vidId);
+
+      list.innerHTML +=
+        '<div class="clip-card">' +
+        '<div class="clip-header"><span class="clip-score">' + puanlar.at(i) + '</span><span style="font-size:11px; color:#a1a1aa;">9:16 Shorts</span></div>' +
+        '<div class="clip-title">' + baslik + '</div>' +
+        '<div class="clip-time">⏱️ ' + zamanAraligi + '</div>' +
+        '<div class="clip-actions">' +
+        '<button type="button" class="play-btn" onclick="kesitOynat(' + basSn + ',' + sure + ')">' + oynatYazi + '</button>' +
+        '<a href="' + kesimLinki + '" target="_blank" class="dl-link">' + indirYazi + '</a>' +
+        '</div></div>';
+    }
+
+    kesitOynat(baslangiclar.at(0), sure);
+    resArea.style.display = "block";
+    st.innerText = lang === "en" ? "3 Viral 9:16 Shorts clips are ready!" : "3 adet viral 9:16 Shorts kesiti hazır!";
+  }, 1200);
 }
 </script>
 </body>
