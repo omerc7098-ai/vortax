@@ -77,9 +77,19 @@ let aktifVideoId = "";
 }
 
 function youtubeIdBul(url) {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  return (match && match.at(2).length === 11) ? match.at(2) : null;
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtu.be")) {
+      return u.pathname.replace("/", "").slice(0, 11);
+    }
+    if (u.searchParams.has("v")) {
+      return u.searchParams.get("v").slice(0, 11);
+    }
+    if (u.pathname.includes("/shorts/")) {
+      return u.pathname.split("/shorts/").at(1).slice(0, 11);
+    }
+  } catch (e) {}
+  return null;
 }
 
 function saniyeFormat(sn) {
