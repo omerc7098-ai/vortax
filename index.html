@@ -106,7 +106,7 @@ function saniyeFormat(sn) {
 function kesitSec(baslangicSn, sureSn, baslikMetni) {
   const lang = document.getElementById("uiLang").value;
   const directLink = document.getElementById("directYtLink");
-  directLink.href = "https://youtu.be"/ + aktifVideoId + "?t=" + baslangicSn;
+  directLink.href = "https://youtu.be/" + aktifVideoId + "?t=" + baslangicSn;
   directLink.innerText = lang === "en" ? ("▶️ Play from " + saniyeFormat(baslangicSn)) : ("▶️ " + saniyeFormat(baslangicSn) + " Anından İzle");
 
   document.getElementById("frameCaption").innerText = baslikMetni + " (" + sureSn + "s)";
