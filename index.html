@@ -178,12 +178,15 @@ async function kesitKesVeIndir(baslangicSn, sureSn, btnEl) {
       recorder.stop();
       return;
     }
+        ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     const vw = tempVid.videoWidth || 1280;
     const vh = tempVid.videoHeight || 720;
-    const cropW = vh * (9 / 16);
-    const sx = Math.max(0, (vw - cropW) / 2);
-    ctx.drawImage(tempVid, sx, 0, cropW, vh, 0, 0, canvas.width, canvas.height);
+    const drawH = canvas.width * (vh / vw);
+    const dy = (canvas.height - drawH) / 2;
+    ctx.drawImage(tempVid, 0, 0, vw, vh, 0, dy, canvas.width, drawH);
     requestAnimationFrame(kareCiz);
+  
   }
   kareCiz();
 }
