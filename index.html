@@ -134,7 +134,8 @@ async function kesitKesVeIndir(baslangicSn, sureSn, btnEl) {
   st.innerText = lang === "en" ? ("Cutting " + sureSn + "s 9:16 clip in your browser, please wait...") : ("Sayfa içinde " + sureSn + " saniyelik 9:16 kesit kesiliyor, lütfen bekle...");
 
   const tempVid = document.createElement("video");
-  tempVid.src = aktifVideoBlobUrl;
+  tempVid.src = aktifVideoBlobUrl;  tempVid.crossOrigin = "anonymous";
+  
   tempVid.muted = false;
   tempVid.playsInline = true;
 
@@ -212,10 +213,8 @@ async function videoyuHazirla() {
   st.innerText = lang === "en" ? "Fetching video into Vortax studio..." : "Video kendi sayfana çekiliyor ve AI viral anları analiz ediyor...";
 
   try {
-    const res = await fetch(workerUrlOlustur(vidId));
-    if (!res.ok) throw new Error("Sunucu hatası");
-    const blob = await res.blob();
-    aktifVideoBlobUrl = URL.createObjectURL(blob);
+    aktifVideoBlobUrl = workerUrlOlustur(vidId);
+    
 
     const baslangiclar = new Array(15, 75, 150);
     const basliklarTR = [
