@@ -106,7 +106,7 @@ function saniyeFormat(sn) {
 function kesitSec(baslangicSn, sureSn, baslikMetni) {
   const lang = document.getElementById("uiLang").value;
   const directLink = document.getElementById("directYtLink");
-  directLink.href = "https://youtu.be/" + aktifVideoId + "?t=" + baslangicSn;
+  directLink.href = "https://youtu.be" + aktifVideoId + "?t=" + baslangicSn;
   directLink.innerText = lang === "en" ? ("▶️ Play from " + saniyeFormat(baslangicSn)) : ("▶️ " + saniyeFormat(baslangicSn) + " Anından İzle");
 
   document.getElementById("frameCaption").innerText = baslikMetni + " (" + sureSn + "s)";
@@ -152,6 +152,9 @@ function videoyuKes() {
       const zamanAraligi = saniyeFormat(basSn) + " - " + saniyeFormat(bitSn) + " (" + sure + "s)";
       const oynatYazi = lang === "en" ? "🎯 Select Clip" : "🎯 Kesiti Seç";
       const indirYazi = lang === "en" ? "⬇️ Cut & Download" : "⬇️ Kes & İndir";
+            const dlUrl = "https://" + "old-wave-f614vortax-api" + ".omerc7098.workers.dev" + "?id=" + vidId;
+      
+      
 
       list.innerHTML +=
         '<div class="clip-card">' +
@@ -160,8 +163,7 @@ function videoyuKes() {
         '<div class="clip-time">⏱️ ' + zamanAraligi + '</div>' +
         '<div class="clip-actions">' +
         '<button type="button" class="play-btn" onclick="kesitSec(' + basSn + ',' + sure + ',\'' + baslik + '\')">' + oynatYazi + '</button>' +
-        '<a href="https://workers.dev?id= + vidId + '" class="dl-link">' + indirYazi + '</a>' +
-        
+        '<a href="' + dlUrl + '" class="dl-link">' + indirYazi + '</a>' +
         '</div></div>';
     }
 
