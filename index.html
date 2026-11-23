@@ -13,12 +13,12 @@
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   input, select, button { width: 100%; padding: 13px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #27272a; background: #1c1c21; color: #fff; font-size: 14px; box-sizing: border-box; outline: none; }
   button.main-btn { background: linear-gradient(90deg, #ff3b30, #ff9500); color: #fff; font-weight: 800; border: none; cursor: pointer; font-size: 15px; box-shadow: 0 8px 20px rgba(255, 59, 48, 0.3); }
-  #status { margin-top: 8px; font-size: 13px; color: #fbbf24; font-weight: 600; }
+  #status { margin-top: 8px; font-size: 13px; color: #fbbf24; font-weight: 600; min-height: 18px; }
   #resultArea { display: none; margin-top: 18px; text-align: left; }
-  .shorts-frame { position: relative; width: 100%; max-width: 250px; aspect-ratio: 9/16; margin: 0 auto 18px auto; border-radius: 20px; overflow: hidden; border: 3px solid #ff3b30; background: linear-gradient(160deg, #27272a, #09090b); box-shadow: 0 12px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 16px; box-sizing: border-box; }
-  .shorts-tag { background: rgba(0,0,0,0.75); color: #00e676; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; border: 1px solid rgba(0,230,118,0.4); }
-  .watch-overlay { background: linear-gradient(90deg, #ff3b30, #ff9500); color: #fff; padding: 14px 20px; border-radius: 14px; text-decoration: none; font-weight: 800; font-size: 14px; box-shadow: 0 6px 20px rgba(255,59,48,0.5); text-align: center; display: inline-block; }
-  .shorts-sub { background: rgba(0,0,0,0.8); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 11px; text-align: center; font-weight: 600; width: 100%; box-sizing: border-box; }
+  .shorts-frame { position: relative; width: 100%; max-width: 250px; aspect-ratio: 9/16; margin: 0 auto 18px auto; border-radius: 20px; overflow: hidden; border: 3px solid #ff3b30; background: #000; box-shadow: 0 12px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 14px; box-sizing: border-box; }
+  .shorts-frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  .shorts-tag { position: relative; z-index: 2; background: rgba(0,0,0,0.75); color: #00e676; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; border: 1px solid rgba(0,230,118,0.4); }
+  .shorts-sub { position: relative; z-index: 2; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 11px; text-align: center; font-weight: 600; width: 100%; box-sizing: border-box; }
   .clip-card { background: #1c1c21; border: 1px solid #2e2e36; border-radius: 14px; padding: 14px; margin-bottom: 12px; }
   .clip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .clip-score { background: rgba(0, 230, 118, 0.15); color: #00e676; padding: 4px 9px; border-radius: 8px; font-size: 11px; font-weight: 700; }
@@ -26,7 +26,9 @@
   .clip-time { font-size: 12px; color: #a1a1aa; margin-bottom: 10px; }
   .clip-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .play-btn { background: #27272a; color: #fff; padding: 10px; font-size: 12px; border-radius: 10px; border: 1px solid #3f3f46; margin: 0; font-weight: 700; cursor: pointer; }
-  .dl-link { display: block; background: #2563eb; color: #fff; text-decoration: none; padding: 10px; font-size: 12px; border-radius: 10px; font-weight: 700; text-align: center; }
+  .dl-btn { background: #2563eb; color: #fff; border: none; padding: 10px; font-size: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; margin: 0; }
+  .dl-btn:disabled { background: #3f3f46; color: #9ca3af; }
+  canvas { display: none; }
 </style>
 </head>
 <body>
@@ -34,7 +36,7 @@
 <div class="box">
   <h1>VORTAX SHORTS AI</h1>
   <div class="badge">✨ ÜCRETSİZ YOUTUBE KESİT STÜDYOSU</div>
-  <p id="subDesc">YouTube bağlantısını yapıştır, yapay zeka en viral anları bulup 9:16 dikey Shorts formatına hazırlasın!</p>
+  <p id="subDesc">YouTube bağlantısını yapıştır, yapay zeka en viral anları bulup 9:16 dikey Shorts olarak kessin!</p>
 
   <div class="row">
     <select id="uiLang" onchange="dilDegistir()">
@@ -51,30 +53,38 @@
   </div>
 
   <input type="text" id="ytUrl" placeholder="YouTube video linkini yapıştır..." />
-  <button type="button" id="analyzeBtn" class="main-btn" onclick="videoyuKes()">✂️ AI ile Shorts Kesitleri Üret</button>
+  <button type="button" id="analyzeBtn" class="main-btn" onclick="videoyuHazirla()">✂️ AI ile Shorts Kesitleri Üret</button>
 
   <div id="status"></div>
 
   <div id="resultArea">
     <div class="shorts-frame">
+      <video id="previewVid" controls playsinline></video>
       <span class="shorts-tag">9:16 SHORTS HD</span>
-      <a id="directYtLink" class="watch-overlay" href="https://youtu.be" target="_blank" rel="noopener">▶️ Kesiti Oynat</a>
       <span id="frameCaption" class="shorts-sub">Viral Kesit Hazır</span>
     </div>
     <div id="clipsList"></div>
   </div>
+  <canvas id="cutCanvas" width="540" height="960"></canvas>
 </div>
 
 <script>
 let aktifVideoId = "";
-  function dilDegistir() {
+let aktifVideoBlobUrl = "";
+  function workerUrlOlustur(vidId) {
+  const u = new URL("https://workers.dev");
+  u.searchParams.set("id", vidId);
+  return u.href;
+}
+
+function dilDegistir() {
   const lang = document.getElementById("uiLang").value;
   if (lang === "en") {
-    document.getElementById("subDesc").innerText = "Paste a YouTube link, AI finds viral moments and prepares 9:16 vertical Shorts!";
+    document.getElementById("subDesc").innerText = "Paste a YouTube link, AI finds viral moments and cuts 9:16 vertical Shorts!";
     document.getElementById("ytUrl").placeholder = "Paste YouTube video link...";
     document.getElementById("analyzeBtn").innerText = "✂️ Generate AI Shorts Clips";
   } else {
-    document.getElementById("subDesc").innerText = "YouTube bağlantısını yapıştır, yapay zeka en viral anları bulup 9:16 dikey Shorts formatına hazırlasın!";
+    document.getElementById("subDesc").innerText = "YouTube bağlantısını yapıştır, yapay zeka en viral anları bulup 9:16 dikey Shorts olarak kessin!";
     document.getElementById("ytUrl").placeholder = "YouTube video linkini yapıştır...";
     document.getElementById("analyzeBtn").innerText = "✂️ AI ile Shorts Kesitleri Üret";
   }
@@ -103,22 +113,87 @@ function saniyeFormat(sn) {
   return (dk < 10 ? "0" : "") + dk + ":" + (kalan < 10 ? "0" : "") + kalan;
 }
 
-function kesitSec(baslangicSn, sureSn, baslikMetni) {
-  const lang = document.getElementById("uiLang").value;
-  const directLink = document.getElementById("directYtLink");
-  directLink.href = "https://youtu.be" + aktifVideoId + "?t=" + baslangicSn;
-  directLink.innerText = lang === "en" ? ("▶️ Play from " + saniyeFormat(baslangicSn)) : ("▶️ " + saniyeFormat(baslangicSn) + " Anından İzle");
-
-  document.getElementById("frameCaption").innerText = baslikMetni + " (" + sureSn + "s)";
+function kesitOnizle(baslangicSn, sureSn, baslikMetni) {
+  const vid = document.getElementById("previewVid");
+  if (aktifVideoBlobUrl) {
+    vid.src = aktifVideoBlobUrl;
+    vid.currentTime = baslangicSn;
+    vid.play().catch(function() {});
+  }
+  document.getElementById("frameCaption").innerText = baslikMetni + " (" + saniyeFormat(baslangicSn) + " - " + saniyeFormat(baslangicSn + sureSn) + ")";
 }
 
-function videoyuKes() {
+async function kesitKesVeIndir(baslangicSn, sureSn, btnEl) {
+  const lang = document.getElementById("uiLang").value;
+  const st = document.getElementById("status");
+  if (!aktifVideoBlobUrl) return;
+
+  btnEl.disabled = true;
+  st.innerText = lang === "en" ? ("Cutting " + sureSn + "s 9:16 clip in your browser, please wait...") : ("Sayfa içinde " + sureSn + " saniyelik 9:16 kesit kesiliyor, lütfen bekle...");
+
+  const tempVid = document.createElement("video");
+  tempVid.src = aktifVideoBlobUrl;
+  tempVid.muted = false;
+  tempVid.playsInline = true;
+
+  await new Promise(function(resolve) {
+    tempVid.onloadedmetadata = function() {
+      tempVid.currentTime = Math.min(baslangicSn, Math.max(0, tempVid.duration - 2));
+    };
+    tempVid.onseeked = resolve;
+  });
+
+  const canvas = document.getElementById("cutCanvas");
+  const ctx = canvas.getContext("2d");
+  const stream = canvas.captureStream(30);
+
+  if (tempVid.captureStream) {
+    const audioTracks = tempVid.captureStream().getAudioTracks();
+    if (audioTracks.length > 0) stream.addTrack(audioTracks.at(0));
+  }
+
+  const recorder = new MediaRecorder(stream);
+  const chunks = [];
+  recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+
+  recorder.onstop = function() {
+    const blob = new Blob(chunks, { type: "video/mp4" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "vortax-shorts-" + sureSn + "s.mp4";
+    a.click();
+    btnEl.disabled = false;
+    st.innerText = lang === "en" ? "Clip cut & downloaded to your phone!" : ("Kesit (" + sureSn + " sn) başarıyla kesildi ve telefonuna indirildi!");
+  };
+
+  recorder.start();
+  tempVid.play();
+
+  const bitisZamani = tempVid.currentTime + sureSn;
+  function kareCiz() {
+    if (tempVid.paused || tempVid.ended || tempVid.currentTime >= bitisZamani) {
+      tempVid.pause();
+      recorder.stop();
+      return;
+    }
+    const vw = tempVid.videoWidth || 1280;
+    const vh = tempVid.videoHeight || 720;
+    const cropW = vh * (9 / 16);
+    const sx = Math.max(0, (vw - cropW) / 2);
+    ctx.drawImage(tempVid, sx, 0, cropW, vh, 0, 0, canvas.width, canvas.height);
+    requestAnimationFrame(kareCiz);
+  }
+  kareCiz();
+}
+
+async function videoyuHazirla() {
   const url = document.getElementById("ytUrl").value.trim();
   const lang = document.getElementById("uiLang").value;
   const sure = parseInt(document.getElementById("clipDuration").value, 10);
   const st = document.getElementById("status");
   const resArea = document.getElementById("resultArea");
   const list = document.getElementById("clipsList");
+  const mainBtn = document.getElementById("analyzeBtn");
 
   const vidId = youtubeIdBul(url);
   if (!vidId) {
@@ -127,10 +202,16 @@ function videoyuKes() {
   }
 
   aktifVideoId = vidId;
-  st.innerText = lang === "en" ? "AI is scanning viral hooks & preparing 9:16 vertical clips..." : "Yapay zeka en viral anları tarıyor ve 9:16 dikey kesitleri hazırlıyor...";
+  mainBtn.disabled = true;
   resArea.style.display = "none";
+  st.innerText = lang === "en" ? "Fetching video into Vortax studio..." : "Video kendi sayfana çekiliyor ve AI viral anları analiz ediyor...";
 
-  setTimeout(function() {
+  try {
+    const res = await fetch(workerUrlOlustur(vidId));
+    if (!res.ok) throw new Error("Sunucu hatası");
+    const blob = await res.blob();
+    aktifVideoBlobUrl = URL.createObjectURL(blob);
+
     const baslangiclar = new Array(15, 75, 150);
     const basliklarTR = [
       "🔥 Viral Kesit #1: En Çarpıcı Giriş Anı",
@@ -150,11 +231,8 @@ function videoyuKes() {
       const bitSn = basSn + sure;
       const baslik = lang === "en" ? basliklarEN.at(i) : basliklarTR.at(i);
       const zamanAraligi = saniyeFormat(basSn) + " - " + saniyeFormat(bitSn) + " (" + sure + "s)";
-      const oynatYazi = lang === "en" ? "🎯 Select Clip" : "🎯 Kesiti Seç";
-      const indirYazi = lang === "en" ? "⬇️ Cut & Download" : "⬇️ Kes & İndir";
-            const dlUrl = "https://" + "old-wave-f614vortax-api" + ".omerc7098.workers.dev" + "?id=" + vidId;
-      
-      
+      const oynatYazi = lang === "en" ? "▶️ Preview Clip" : "▶️ Kesiti Önizle";
+      const indirYazi = lang === "en" ? ("✂️ Cut " + sure + "s & Save") : ("✂️ " + sure + "s Kes & İndir");
 
       list.innerHTML +=
         '<div class="clip-card">' +
@@ -162,15 +240,18 @@ function videoyuKes() {
         '<div class="clip-title">' + baslik + '</div>' +
         '<div class="clip-time">⏱️ ' + zamanAraligi + '</div>' +
         '<div class="clip-actions">' +
-        '<button type="button" class="play-btn" onclick="kesitSec(' + basSn + ',' + sure + ',\'' + baslik + '\')">' + oynatYazi + '</button>' +
-        '<a href="' + dlUrl + '" class="dl-link">' + indirYazi + '</a>' +
+        '<button type="button" class="play-btn" onclick="kesitOnizle(' + basSn + ',' + sure + ',\'' + baslik + '\')">' + oynatYazi + '</button>' +
+        '<button type="button" class="dl-btn" onclick="kesitKesVeIndir(' + basSn + ',' + sure + ',this)">' + indirYazi + '</button>' +
         '</div></div>';
     }
 
-    kesitSec(baslangiclar.at(0), sure, lang === "en" ? basliklarEN.at(0) : basliklarTR.at(0));
     resArea.style.display = "block";
-    st.innerText = lang === "en" ? "3 Viral 9:16 Shorts clips are ready!" : "3 adet viral 9:16 Shorts kesiti hazır!";
-  }, 1000);
+    kesitOnizle(baslangiclar.at(0), sure, lang === "en" ? basliklarEN.at(0) : basliklarTR.at(0));
+    st.innerText = lang === "en" ? "Ready! Preview or cut your 9:16 Shorts clip." : "Hazır! İstediğin kesiti kendi ekranında önizle veya kesip indir.";
+  } catch (e) {
+    st.innerText = lang === "en" ? "Error loading video: " + e.message : "Video yüklenirken hata oluştu: " + e.message;
+  }
+  mainBtn.disabled = false;
 }
 </script>
 </body>
