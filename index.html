@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vortax AI - Gerçekçi POV Video Stüdyosu</title>
+<title>Vortax AI - Viral Çöp Adam Senaryo Stüdyosu</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #09090b; color: #fff; display: flex; justify-content: center; padding: 15px; margin: 0; }
   .box { background: #141418; padding: 20px; border-radius: 18px; width: 100%; max-width: 440px; border: 1px solid #27272a; text-align: center; box-shadow: 0 10px 30px rgba(0,230,118,0.12); }
@@ -24,21 +24,20 @@
 
 <div class="box">
   <h1>VORTAX AI STUDIO</h1>
-  <div class="badge">AI SENARYO • ÇİZİM • TOK SES MOTORU</div>
-  <p>Aklındaki herhangi bir konuyu yaz; yapay zeka 3 sahnelik çizim ve sesli video üretsin!</p>
+  <div class="badge">ENGELSİZ ÇÖP ADAM SENARYO MOTORU</div>
+  <p>Aklındaki herhangi bir konuyu yaz; Vortax 3 sahnelik TikTok videosu ve seslendirme üretsin!</p>
 
   <input type="text" id="topic" placeholder="Örn: 30 gün zombi istilası veya köpek virüsü..." />
-  <button id="btn" type="button" onclick="uretimeBasla()">🎬 AI ile Viral Video Üret</button>
+  <button id="btn" type="button" onclick="uretimeBasla()">🎬 Viral Çöp Adam Videosu Üret</button>
 
   <div id="status"></div>
   <canvas id="cvs" width="540" height="960"></canvas>
   <video id="vid" controls autoplay loop playsinline></video>
   <button id="speakBtn" type="button" class="voice-btn" onclick="sesOku()">🔊 Hikaye Sesini Tekrar Dinle</button>
-  <a id="dl" class="dl-btn" download="vortax-ai-video.webm">⬇️ TikTok / Reels Videosunu İndir</a>
+  <a id="dl" class="dl-btn" download="vortax-tiktok-video.webm">⬇️ TikTok / Reels Videosunu İndir</a>
 </div>
 
 <script>
-const API_URL = "https://workers.dev";
 let tamMetin = "";
 let sesler = [];
 
@@ -58,21 +57,105 @@ function sesOku() {
     u.voice = iyi || tr.at(0);
   }
   u.rate = 0.94;
-  u.pitch = 0.80;
+  u.pitch = 0.78;
   window.speechSynthesis.speak(u);
 }
 
-function resimYukle(komut) {
-  return new Promise(function(resolve) {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    const timeout = setTimeout(function() { resolve(null); }, 15000);
-    img.onload = function() { clearTimeout(timeout); resolve(img); };
-    img.onerror = function() { clearTimeout(timeout); resolve(null); };
-    img.src = API_URL + "/img?p=" + encodeURIComponent(komut);
-  });
+function temaSec(metin) {
+  const m = metin.toLowerCase();
+  if (m.includes("kırmızı") || m.includes("yağmur") || m.includes("kan")) return "red";
+  if (m.includes("zombi") || m.includes("virüs") || m.includes("köpek") || m.includes("salgın")) return "green";
+  if (m.includes("okul") || m.includes("sınav") || m.includes("ders")) return "school";
+  return "dark";
 }
-  function videoBirlesikRender(baslik, sahneler) {
+  function sahneCizimi(ctx, frame, sahneNo, tema) {
+  const dalga = Math.sin(frame * 0.25);
+  const titreme = sahneNo === 1 ? Math.sin(frame * 0.6) * 4 : 0;
+  const cx = 270 + titreme;
+  const cy = 485;
+
+  if (tema === "school") {
+    ctx.fillStyle = "#e2e8f0";
+    ctx.fillRect(40, 240, 460, 440);
+    ctx.fillStyle = "#14532d";
+    ctx.fillRect(85, 270, 370, 110);
+  } else {
+    const sky = ctx.createLinearGradient(0, 240, 0, 680);
+    sky.addColorStop(0, tema === "red" ? "#7f1d1d" : (tema === "green" ? "#064e3b" : "#1e293b"));
+    sky.addColorStop(1, "#09090b");
+    ctx.fillStyle = sky;
+    ctx.fillRect(40, 240, 460, 440);
+  }
+
+  ctx.fillStyle = "#18181b";
+  ctx.fillRect(40, 610, 460, 70);
+
+  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  ctx.fillRect(55, 255, 130, 34);
+  ctx.fillStyle = "#facc15";
+  ctx.font = "bold 16px sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(sahneNo === 0 ? "GÜN 1" : (sahneNo === 1 ? "GÜN 15: KAOS" : "SON KARAR"), 68, 278);
+  ctx.textAlign = "center";
+
+  if (tema !== "school") {
+    ctx.fillStyle = tema === "red" ? "#ef4444" : (tema === "green" ? "#4ade80" : "#94a3b8");
+    for (let i = 0; i < 25; i++) {
+      const px = 50 + ((i * 73 + frame * 4) % 440);
+      const py = 250 + ((i * 97 + frame * 10) % 360);
+      ctx.fillRect(px, py, 3, 12);
+    }
+  }
+
+  ctx.strokeStyle = tema === "school" ? "#0f172a" : "#ffffff";
+  ctx.lineWidth = 7;
+  ctx.lineCap = "round";
+
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 35);
+  ctx.lineTo(cx, cy + 55);
+  ctx.stroke();
+
+  const adim = sahneNo === 1 ? dalga * 35 : dalga * 10;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + 55);
+  ctx.lineTo(cx - adim, cy + 125);
+  ctx.moveTo(cx, cy + 55);
+  ctx.lineTo(cx + adim, cy + 125);
+  ctx.stroke();
+
+  ctx.beginPath();
+  if (sahneNo === 1) {
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx - 50, cy - 60 + dalga * 15);
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx + 50, cy - 60 - dalga * 15);
+  } else {
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx - 45, cy + 15 + dalga * 12);
+    ctx.moveTo(cx, cy - 20);
+    ctx.lineTo(cx + 45, cy + 15 - dalga * 12);
+  }
+  ctx.stroke();
+
+  ctx.fillStyle = tema === "school" ? "#0f172a" : "#ffffff";
+  ctx.beginPath();
+  ctx.arc(cx, cy - 75, 36, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = tema === "school" ? "#ffffff" : "#09090b";
+  ctx.beginPath();
+  ctx.arc(cx - 11, cy - 80, 4, 0, Math.PI * 2);
+  ctx.arc(cx + 11, cy - 80, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  const agiz = Math.abs(Math.sin(frame * 0.45)) * 10 + 2;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy - 58, 8, agiz / 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function videoRender(baslik, sahneler, tema) {
   return new Promise(function(resolve) {
     const c = document.getElementById("cvs");
     const ctx = c.getContext("2d");
@@ -102,26 +185,11 @@ function resimYukle(komut) {
       ctx.fillText(baslik, c.width / 2, 165, 460);
 
       const sahneIdx = Math.min(2, Math.floor(frame / 90));
-      const aktifSahne = sahneler.at(sahneIdx);
       const lokalFrame = frame % 90;
 
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(40, 240, 460, 440);
-      ctx.clip();
+      sahneCizimi(ctx, frame, sahneIdx, tema);
 
-      if (aktifSahne.img) {
-        const zoom = 1.0 + (lokalFrame / 90) * 0.14;
-        const w = 460 * zoom;
-        const h = 440 * zoom;
-        ctx.drawImage(aktifSahne.img, 40 - (w - 460) / 2, 240 - (h - 440) / 2, w, h);
-      } else {
-        ctx.fillStyle = "#1f2937";
-        ctx.fillRect(40, 240, 460, 440);
-      }
-      ctx.restore();
-
-      const kelimeler = aktifSahne.text.toUpperCase().split(" ");
+      const kelimeler = sahneler.at(sahneIdx).toUpperCase().split(" ");
       const kIdx = Math.floor((lokalFrame / 90) * kelimeler.length);
       const altYazi = kelimeler.slice(Math.max(0, kIdx - 1), kIdx + 2).join(" ");
 
@@ -133,10 +201,10 @@ function resimYukle(komut) {
       ctx.fillText(altYazi, c.width / 2, 645);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 21px 'Segoe UI', Arial, sans-serif";
-      ctx.fillText("Yeni partlar ve seriler için", c.width / 2, 775);
-      ctx.fillText("takip etmeyi görüşlerinizi", c.width / 2, 805);
-      ctx.fillText("yorumlara yazmayı unutmayın", c.width / 2, 835);
+      ctx.font = "bold 22px 'Segoe UI', Arial, sans-serif";
+      ctx.fillText("Peki böyle bir durumda", c.width / 2, 775);
+      ctx.fillStyle = "#facc15";
+      ctx.fillText("SEN NE YAPARDIN?", c.width / 2, 810);
 
       frame++;
       requestAnimationFrame(ciz);
@@ -160,42 +228,24 @@ async function uretimeBasla() {
   spBtn.style.display = "none";
   dl.style.display = "none";
 
-  try {
-    st.innerText = "1/3: Gemini AI senaryoyu yazıyor...";
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic: konu })
-    });
-    const senaryo = await res.json();
-    if (senaryo.error) throw new Error(senaryo.error);
+  const s1 = "İlk gün herkes bunu sıradan bir olay sandı: " + konu + ".";
+  const s2 = "Kısa sürede her yer karıştı ve kaçacak hiçbir yer kalmadı.";
+  const s3 = "Artık son şansın. Hayatta kalmak için sen ne yapardın?";
+  const tema = temaSec(konu);
 
-    st.innerText = "2/3: Yapay zeka 3 farklı sahne çizimini üretiyor (15-20 sn)...";
-    const img1 = await resimYukle(senaryo.s1_img);
-    const img2 = await resimYukle(senaryo.s2_img);
-    const img3 = await resimYukle(senaryo.s3_img);
+  tamMetin = konu + ". " + s1 + " " + s2 + " " + s3;
+  st.innerText = "Vortax AI 3 sahnelik TikTok videosunu oluşturuyor (9 saniye)...";
 
-    st.innerText = "3/3: Sahneler, alt yazılar ve ses birleştiriliyor...";
-    tamMetin = senaryo.title + ". " + senaryo.s1_text + " " + senaryo.s2_text + " " + senaryo.s3_text;
+  const vUrl = await videoRender(konu, [s1, s2, s3], tema);
+  vidEl.src = vUrl;
+  vidEl.style.display = "block";
+  spBtn.style.display = "block";
+  dl.href = vUrl;
+  dl.style.display = "block";
+  st.innerText = "Video hazır! Hiçbir ağ engeline takılmadan üretildi.";
 
-    const vUrl = await videoBirlesikRender(senaryo.title, [
-      { text: senaryo.s1_text, img: img1 },
-      { text: senaryo.s2_text, img: img2 },
-      { text: senaryo.s3_text, img: img3 }
-    ]);
-
-    vidEl.src = vUrl;
-    vidEl.style.display = "block";
-    spBtn.style.display = "block";
-    dl.href = vUrl;
-    dl.style.display = "block";
-    st.innerText = "AI Videon hazır! Oynatabilir, sesini dinleyebilir veya indirebilirsin.";
-    sesOku();
-  } catch (e) {
-    st.innerText = "Durum: " + e.message;
-  } finally {
-    btn.disabled = false;
-  }
+  sesOku();
+  btn.disabled = false;
 }
 </script>
 </body>
