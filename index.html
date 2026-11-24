@@ -124,74 +124,90 @@ function kesitOnizle(baslangicSn, sureSn, baslikMetni) {
   }
   document.getElementById("frameCaption").innerText = baslikMetni + " (" + saniyeFormat(baslangicSn) + " - " + saniyeFormat(baslangicSn + sureSn) + ")";
 }
-
 async function kesitKesVeIndir(baslangicSn, sureSn, btnEl) {
   const lang = document.getElementById("uiLang").value;
   const st = document.getElementById("status");
   if (!aktifVideoBlobUrl) return;
 
   btnEl.disabled = true;
-  st.innerText = lang === "en" ? ("Cutting " + sureSn + "s 9:16 clip in your browser, please wait...") : ("Sayfa içinde " + sureSn + " saniyelik 9:16 kesit kesiliyor, lütfen bekle...");
+  st.innerText = lang === "en" ? ("Preparing " + sureSn + "s clip...") : (sureSn + " saniyelik kesit hazırlanıyor, lütfen bekle...");
 
-  const tempVid = document.createElement("video");
-  tempVid.src = aktifVideoBlobUrl;
-  
-  tempVid.muted = false;
-  tempVid.playsInline = true;
+  try {
+    const tempVid = document.createElement("video");
+    tempVid.crossOrigin = "anonymous";
+    tempVid.src = aktifVideoBlobUrl;
+    tempVid.muted = false;
+    tempVid.playsInline = true;
 
-  await new Promise(function(resolve) {
-    tempVid.onloadedmetadata = function() {
-      tempVid.currentTime = Math.min(baslangicSn, Math.max(0, tempVid.duration - 2));
-    };
-    tempVid.onseeked = resolve;
-  });
+    await new Promise(function(resolve, reject) {
+      tempVid.onloadedmetadata = function() {
+        tempVid.currentTime = Math.min(baslangicSn, Math.max(0, tempVid.duration - 2));
+      };
+      tempVid.onseeked = resolve;
+      tempVid.onerror = reject;
+      setTimeout(reject, 8000);
+    });
 
-  const canvas = document.getElementById("cutCanvas");
-  const ctx = canvas.getContext("2d");
-  const stream = canvas.captureStream(30);
+    const canvas = document.getElementById("cutCanvas");
+    const ctx = canvas.getContext("2d");
+    const stream = canvas.captureStream(30);
 
-  if (tempVid.captureStream) {
-    const audioTracks = tempVid.captureStream().getAudioTracks();
-    if (audioTracks.length > 0) stream.addTrack(audioTracks.at(0));
-  }
-
-  const recorder = new MediaRecorder(stream);
-  const chunks = [];
-  recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
-
-  recorder.onstop = function() {
-    const blob = new Blob(chunks, { type: "video/mp4" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "vortax-shorts-" + sureSn + "s.mp4";
-    a.click();
-    btnEl.disabled = false;
-    st.innerText = lang === "en" ? "Clip cut & downloaded to your phone!" : ("Kesit (" + sureSn + " sn) başarıyla kesildi ve telefonuna indirildi!");
-  };
-
-  recorder.start();
-  tempVid.play();
-
-  const bitisZamani = tempVid.currentTime + sureSn;
-  function kareCiz() {
-    if (tempVid.paused || tempVid.ended || tempVid.currentTime >= bitisZamani) {
-      tempVid.pause();
-      recorder.stop();
-      return;
+    if (tempVid.captureStream) {
+      const audioTracks = tempVid.captureStream().getAudioTracks();
+      if (audioTracks.length > 0) stream.addTrack(audioTracks.at(0));
     }
-        ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    const vw = tempVid.videoWidth || 1280;
-    const vh = tempVid.videoHeight || 720;
-    const drawH = canvas.width * (vh / vw);
-    const dy = (canvas.height - drawH) / 2;
-    ctx.drawImage(tempVid, 0, 0, vw, vh, 0, dy, canvas.width, drawH);
-    requestAnimationFrame(kareCiz);
-  
+
+    const recorder = new MediaRecorder(stream);
+    const chunks = [];
+    recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+
+    recorder.onstop = function() {
+      const blob = new Blob(chunks, { type: "video/mp4" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "vortax-shorts-" + sureSn + "s.mp4";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      btnEl.disabled = false;
+      st.innerText = lang === "en" ? "Clip downloaded!" : "Kesit başarıyla telefonuna indirildi!";
+    };
+
+    recorder.start();
+    await tempVid.play();
+
+    const bitisZamani = tempVid.currentTime + sureSn;
+    function kareCiz() {
+      if (tempVid.paused || tempVid.ended || tempVid.currentTime >= bitisZamani) {
+        tempVid.pause();
+        recorder.stop();
+        return;
+      }
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const vw = tempVid.videoWidth || 1280;
+      const vh = tempVid.videoHeight || 720;
+      const drawH = canvas.width * (vh / vw);
+      const dy = (canvas.height - drawH) / 2;
+      ctx.drawImage(tempVid, 0, 0, vw, vh, 0, dy, canvas.width, drawH);
+      requestAnimationFrame(kareCiz);
+    }
+    kareCiz();
+  } catch (e) {
+    // Tarayici CORS engeli koyarsa dogrudan indirme penceresini acar
+    const a = document.createElement("a");
+    a.href = aktifVideoBlobUrl;
+    a.download = "vortax-video-" + aktifVideoId + ".mp4";
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    btnEl.disabled = false;
+    st.innerText = lang === "en" ? "Direct download started!" : "Doğrudan indirme başlatıldı!";
   }
-  kareCiz();
 }
 
+  
 async function videoyuHazirla() {
   const url = document.getElementById("ytUrl").value.trim();
   const lang = document.getElementById("uiLang").value;
