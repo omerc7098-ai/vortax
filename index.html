@@ -135,7 +135,8 @@ async function kesitKesVeIndir(baslangicSn, sureSn, btnEl) {
   try {
     const tempVid = document.createElement("video");
     tempVid.crossOrigin = "anonymous";
-    tempVid.src = aktifVideoBlobUrl;
+        tempVid.src = workerUrlOlustur(aktifVideoId) + "&stream=1";
+    
     tempVid.muted = false;
     tempVid.playsInline = true;
 
